@@ -1,0 +1,13 @@
+multiChannel/furtherAna/
+rootfiles/
+.vscode/
+*.code-workspace
+*.eps
+*.hld
+*.pcm
+*.png
+*.root
+*.so
+*.svg
+common/stream/stream.cpp
+.nfs*
