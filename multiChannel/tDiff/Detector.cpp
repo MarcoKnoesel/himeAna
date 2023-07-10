@@ -20,16 +20,11 @@
 */
 
 #include "Detector.h"
-
 #include "CSVReader.h"
 #include "Constants.h"
 
-using std::array;
 using std::vector;
-
-#include <iostream>
-using std::cout;
-using std::endl;
+using std::string;
 
 
 
@@ -61,25 +56,23 @@ Detector::Detector(){
 
 
 
-Detector::Detector(const char *path_to_csv_file){
+Detector::Detector(const char* path_to_csv_file){
 
 	modules = vector<Module>(Constants::nModules);
 	reverseSearchChannelToModule = vector<int>(2 * modules.size(), -1);
 
-	const int nColumns = 7;
-
-	vector<array<int,nColumns>> csvData = CSVReader::read(path_to_csv_file);
+	vector<vector<string>> csvData = CSVReader::read(path_to_csv_file, 7);
 	
 	// combine information and add modules to the detector
-	for(const array<int,nColumns> &entries : csvData){
+	for(const vector<string> &entries : csvData){
 
-		int wall 		= entries[0];
-		int ch_r_d_raw 	= entries[1];
-		int ch_l_u_raw 	= entries[2];
-		int layer 		= entries[3];
-		int mod_raw 	= entries[4];
-		int chain 		= entries[5];
-		int tdc  		= entries[6];
+		int wall 		= std::stoi(entries[0]);
+		int ch_r_d_raw 	= std::stoi(entries[1]);
+		int ch_l_u_raw 	= std::stoi(entries[2]);
+		int layer 		= std::stoi(entries[3]);
+		int mod_raw 	= std::stoi(entries[4]);
+		int chain 		= std::stoi(entries[5]);
+		int tdc  		= std::stoi(entries[6]);
 
 		int channelOffset = chain * 16 + tdc * 48 + wall * 100;
 

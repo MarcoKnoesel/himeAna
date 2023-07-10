@@ -31,7 +31,7 @@ using std::string;
 Thresholds::Thresholds(TString pathtoCSVFile, int nModules){
 
 	thresholds = vector<float>(nModules, -1.);
-	vector<vector<string>> dataFromCSVFile = CSVReader::read(pathtoCSVFile,2);
+	vector<vector<string>> dataFromCSVFile = CSVReader::read(pathtoCSVFile, 2);
 
 	for(vector<string> &dataFromOneLine : dataFromCSVFile){
 

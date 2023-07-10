@@ -24,17 +24,18 @@
 #include <fstream>
 using std::ifstream;
 using std::string;
-using std::stoi;
 using std::vector;
-using std::array;
 
 
-std::vector<std::array<int,7>> CSVReader::read(const char *path_to_csv_file){
+vector<vector<string>> CSVReader::read(const char *path_to_csv_file, const int nEntries){
 
+	// input
 	ifstream ifs(path_to_csv_file);
+	// a line in the csv file
 	std::string line;
-	const int nEntries = 7;
-	vector<array<int,nEntries>> data;
+	// data that will be returned from this function
+	vector<vector<string>> data;
+
 
 	while(getline(ifs,line)){
 
@@ -43,13 +44,16 @@ std::vector<std::array<int,7>> CSVReader::read(const char *path_to_csv_file){
 
 		// remove leading whitespaces
 		while(line[0] == ' ' || line[0] == '\t') line.erase(0);
+
+		// After removing the whitespaces, the line might be empty.
+		// If so, skip it.
 		if(!line.size()) continue;
 
 		// skip comments
 		if(line[0] == '#') continue;
 		
 		// find delimiters
-		array<int,nEntries+1> delimiters;
+		vector<int> delimiters(nEntries+1);
 		delimiters[0] = -1;
 		delimiters.back() = line.size();
 		int commaCounter = 1;
@@ -62,7 +66,7 @@ std::vector<std::array<int,7>> CSVReader::read(const char *path_to_csv_file){
 		}
 		
 		// extract entries as std::string
-		array<string,nEntries> entries;
+		vector<string> entries(nEntries);
 		bool goToNextLine = false;
 		
 		for(int i = 0; i < entries.size(); i++){
@@ -80,13 +84,7 @@ std::vector<std::array<int,7>> CSVReader::read(const char *path_to_csv_file){
 		}
 		if(goToNextLine) continue;
 
-		// convert strings to integers
-		array<int,nEntries> entries_int;
-		for(int i = 0; i < entries.size(); i++){
-			entries_int[i] = std::stoi(entries[i]);
-		}
-
-		data.push_back(entries_int);
+		data.push_back(entries);
 	}
 
 	return data;

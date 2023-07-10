@@ -27,19 +27,19 @@ along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
   - [Structure of the HIMEana Tools](#structure-of-the-himeana-tools)
     - [Configure Details about the Setup of HIME](#configure-details-about-the-setup-of-hime)
     - [Steps of the multiChannel Analysis](#steps-of-the-multichannel-analysis)
+    - [Common Source Code](#common-source-code)
   - [Compile and Start](#compile-and-start)
-
+- [The Stream framework](#the-stream-framework)
 
 ## Initial Setup
 1. Go to directory `data` and create a symbolic link called `unpacked` that points towards your unpacked data:
     `ln -s [path] unpacked`.
     Inside `unpacked`, create a directory for each **experiment**, in which arbitrarily many ROOT files can be located, each one representing a **run**.
-2. Go to directory `common` and modify the settings section: 
+2. Modify the settings section in the file `common/common.sh`. (It is **not** required to execute `common/common.sh`. Instead, it will be sourced by other shell scripts.) 
    1. Choose the root version you want to source.
    2. (optional) Modify the command that is used to call ROOT. This might be useful if you are using an older version of ROOT that does not yet include a web server to display all your instances of TCanvas, TBrowser, etc. in your web browser.
    3. Enter the complete absolute path to your `himeAna` directory.
 3. In the same directory `common`, type `./compileCommons.sh`. This will create shared libraries that are loaded in each of the individual analysis steps.
-
 
 ## Structure of the HIMEana Tools
 The two main parts of HIMEana are `fourChannel` and `multiChannel`. The former is used to have a look on uncalibrated data from up to 4 channels and allows to cut on coincidences between two modules. The latter is used to calibrate all modules of HIME in time, position and energy, which is done is multiple steps. For each step, there is a subdirectory in `multichannel`, which reads and writes from/to the corresponding subdirectories of `data`. 
@@ -67,7 +67,36 @@ In the following, the individual parts of the multiChannel analysis are listed.
 4. `trackingForEnergyCalibration`: Tracks again muons in HIME, but makes use of the position calibration. The results are correlation plots of ToT and muon-energy deposition. The latter is calculated from the track lengths of the cosmic particles inside each module.
 5. `energyCalibration`: Fits calibration functions to the previously determined correlation plots.
 
+### Common Source Code
+Some of the functionality of HIMEana is shared between its individual analysis steps: For instance, the reader for CSV files is required in multiple components of `multiChannel`. Usually, it will not be necessary to modify the corresponding source code, but if necessary, this can be done in the subdirectories of `common`. After the modifications are done, recompile by going to `common` and executing `compileCommons.sh`.
+
 ## Compile and Start
 Four each component (`fourChannel` and each step of `multiChannel`) of HIMEana, there is at least one shell script that is used to compile the source code and to start the analysis if the compilation was successful. These shell scripts are called `start.sh` and `loop.sh`. The former will start a single thread only, analyzing a single file. The latter will start a number of threads in parallel. The amount of threads can be specified in `thread_goal.txt`. Having this number in a separate text file (instead of having it hard coded in the shell script) allows to change the desired number of threads even after `loop.sh` has been started. Always `cd` at first to the directory of the analysis step before executing `start.sh` or `loop.sh`.
 
-If you only want to compile a component of HIMEana, without starting it directly, simply type `make` in the corresponding directory. In order to compile from scratch, type `make clean` at first. Starting an analysis should **always** be done using one of the shell scripts!
+If you only want to compile a component of HIMEana, without starting it directly, simply type `make` in the corresponding directory. In order to compile from scratch, type `make clean` at first. Starting an analysis should **always** be done using one of the shell scripts! Note that the source code in `common` needs to be compiled separately, i.e., it is **not** sufficient to compile `fourChannel` or one of the `multiChannel` components, if code inside `common` is modified.
+
+# The Stream framework
+HIMEana contains the following files that were taken from the Stream framework and modified:
+- `common/stream/HldProcessor.h`
+- `common/stream/TdcSubEvent.h`
+- `common/stream/TrbProcessor.h`
+
+Copyright (C) 2013 -
+GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
+Planckstr. 1, 64291 Darmstadt, Germany
+Contact:  https://github.com/gsi-ee/stream
+
+Modifications Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+
+The Stream framework is free software: you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+
+The Stream framework is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with the Stream framework. If not, see <https://www.gnu.org/licenses/>.

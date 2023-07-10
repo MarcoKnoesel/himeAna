@@ -21,7 +21,7 @@
 #!/bin/bash
 
 # ---------- settings ----------
-subdir=2023-01-05
+subdir=2022-11-30b
 # ------------------------------
 
 source ../../common/common.sh

@@ -22,9 +22,7 @@
 #include "Thresholds.h"
 
 #include "CSVReader.h"
-#include <array>
 
-using std::array;
 using std::vector;
 using std::string;
 
@@ -33,9 +31,9 @@ using std::string;
 Thresholds::Thresholds(TString pathtoCSVFile, int nModules){
 
 	thresholds = vector<float>(nModules, -1.);
-	vector<array<string,2>> dataFromCSVFile = CSVReader::read(pathtoCSVFile);
+	vector<vector<string>> dataFromCSVFile = CSVReader::read(pathtoCSVFile, 2);
 
-	for(array<string,2> &dataFromOneLine : dataFromCSVFile){
+	for(vector<string> &dataFromOneLine : dataFromCSVFile){
 
 		int moduleID = std::stoi(dataFromOneLine[0]);
 		float threshold = std::stof(dataFromOneLine[1]);
