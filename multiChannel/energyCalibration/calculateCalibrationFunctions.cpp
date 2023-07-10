@@ -43,7 +43,7 @@ void calculateCalibrationFunctions(const char* trb3dir, const char* subdir, vect
 		modules[iMod].setHorizontal(Helpers::isHorizontal(wall, iMod));
 		modules[iMod].iMod = iMod;
 	}
-	Input input(TString(trb3dir) + "/data/pathLengthVsTotHistograms/" + TString(subdir), filenames, modules);
+	Input input(TString(trb3dir) + "/data/trackingForEnergyCalibration/" + TString(subdir), filenames, modules);
 
 	double energy_at_which_to_calculate_dEPerE = 10.;
 	Results results;

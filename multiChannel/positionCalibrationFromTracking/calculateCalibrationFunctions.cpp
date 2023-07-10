@@ -45,7 +45,7 @@ using std::endl;
 void calculateCalibrationFunctions(TString trb3dir, TString subdir, int nCountsPerProjection, int nProjections){
 
 	// ---------------- Input ----------------
-	TString path(trb3dir + "/data/posVsTDiffHistograms/" + subdir + ".root");
+	TString path(trb3dir + "/data/trackingForPositionCalibration/" + subdir + ".root");
 	vector<Module> modules;
 
 	cout << "[calculateCalibrationFunctions] Reading file " << path.Data() << endl;

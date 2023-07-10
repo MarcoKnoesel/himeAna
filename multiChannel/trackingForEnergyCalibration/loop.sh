@@ -34,9 +34,9 @@ if [ $? -eq 0 ]; then
 	fileCounter=0
 
 	# create directory for output
-	create_directory pathLengthVsTotHistograms "$subdir"
+	create_directory trackingForEnergyCalibration "$subdir"
 	
-	for filename in "$HIME_ANA_DIRECTORY"/data/positionCalibrated/"$subdir"/*.root; do
+	for filename in "$HIME_ANA_DIRECTORY"/data/applyPositionCalibration/"$subdir"/*.root; do
 		check_threads "$fileCounter"
 		filenameBase=$(basename "$filename")
 		$ROOT_CALL "fillPathLengthVsTot( \"${HIME_ANA_DIRECTORY}\", \"${subdir}\", \"${filenameBase}\", \"${geometryFile}\", false)" > /dev/null &

@@ -33,7 +33,7 @@ make
 if [ $? -eq 0 ]; then
 
 	# create directory for output
-	create_directory pathLengthVsTotHistograms "$subdir"
+	create_directory trackingForEnergyCalibration "$subdir"
 
 	# start
 	$ROOT_CALL "fillPathLengthVsTot(\"${HIME_ANA_DIRECTORY}\", \"${subdir}\", \"${filename}\", \"${geometryFile}\", true)"

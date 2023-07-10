@@ -46,7 +46,7 @@ void applyCalibration(const char *trb3dir, const char *dir, const char *filename
 
 	// ---------------- Ouput: position calibration applied on data ----------------
 	// some of the leaves are simply copied -> pass TDiffData to PosCalData
-	PosCalData output(TString(trb3dir) + "/data/positionCalibrated/" + TString(dir) + "/" + TString(filename), input);
+	PosCalData output(TString(trb3dir) + "/data/applyPositionCalibration/" + TString(dir) + "/" + TString(filename), input);
 
 	// ---------------- Get position calibration functions ----------------
 	CalibrationFunctions posCalFuncs(TString(trb3dir) + "/data/simplePositionCalibration/" + TString(dir) + "/calibration.root" );

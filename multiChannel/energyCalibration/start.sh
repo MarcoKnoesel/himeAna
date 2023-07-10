@@ -35,7 +35,7 @@ if [ $? -eq 0 ]; then
 	create_directory energyCalibration "$subdir"
 	
 	# create a list of all root files in subdir
-	get_all_files pathLengthVsTotHistograms "$subdir"
+	get_all_files trackingForEnergyCalibration "$subdir"
 
 	# calculate calibration functions
 	$ROOT_CALL "calculateCalibrationFunctions(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",${ALL_FILES},${wall})"

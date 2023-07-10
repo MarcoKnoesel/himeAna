@@ -33,7 +33,7 @@ if [ $? -eq 0 ]; then
 	
 	fileCounter=0
 	
-	create_directory positionCalibrated "$subdir"
+	create_directory applyPositionCalibration "$subdir"
 
 	for filename in "$HIME_ANA_DIRECTORY"/data/tDiff/"$subdir"/*.root; do
 		check_threads "$fileCounter"

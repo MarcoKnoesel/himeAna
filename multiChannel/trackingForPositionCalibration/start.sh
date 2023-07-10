@@ -34,7 +34,7 @@ if [ $? -eq 0 ]; then
 	get_all_files unpacked "$subdir"
 
 	# create directory for output
-	create_directory posVsTDiffHistograms "$subdir"
+	create_directory trackingForPositionCalibration "$subdir"
 
 	# start 
 	$ROOT_CALL "tracking(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",${ALL_FILES})"

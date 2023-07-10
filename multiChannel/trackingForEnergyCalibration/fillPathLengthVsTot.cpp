@@ -48,7 +48,7 @@ using std::endl;
 void fillPathLengthVsTot(const char *trb3dir, const char *subdir, const char* filename, const char *geometryFile, bool plot){
 
 	// ---------------- Input ----------------
-	PosCalData input(TString(trb3dir) + "/data/positionCalibrated/" + TString(subdir), filename);
+	PosCalData input(TString(trb3dir) + "/data/applyPositionCalibration/" + TString(subdir), filename);
 	const int nEvents = input.getNEvents();
 	TString thrsPath(TString(trb3dir) + "/data/thresholds/" + TString(subdir) + ".csv");
 	cout << "[FillPathLengthVsTot] Reading thresholds from " << thrsPath.Data() << endl;
@@ -103,7 +103,7 @@ void fillPathLengthVsTot(const char *trb3dir, const char *subdir, const char* fi
 		}
 		*/
 	}
-	TString pathOut(TString(trb3dir) + "/data/pathLengthVsTotHistograms/" + TString(subdir) + "/" + TString(filename));
+	TString pathOut(TString(trb3dir) + "/data/trackingForEnergyCalibration/" + TString(subdir) + "/" + TString(filename));
 	cout << "[fillPathLengthVsTot] Writing file " << pathOut << endl;
 	hime.write(pathOut);
 
