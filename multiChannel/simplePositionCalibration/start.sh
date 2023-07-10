@@ -21,7 +21,7 @@
 #!/bin/bash
 
 # ---------- settings ----------
-subdir=2022-11-30b
+subdir=2023-01-05
 # ------------------------------
 
 source ../../common/common.sh
@@ -32,7 +32,7 @@ if [ $? -eq 0 ]; then
 
 	create_directory simplePositionCalibration "$subdir"
 
-	get_all_files totVsTDiffHistograms "$subdir"
+	get_all_files tDiff "$subdir"
 
 	# calculate calibration functions
 	$ROOT_CALL "calculateCalibrationFunctions(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",${ALL_FILES})"

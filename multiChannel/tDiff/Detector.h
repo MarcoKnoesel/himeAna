@@ -58,7 +58,8 @@ class Detector{
 	Detector(const char *path_to_csv_file);
 	void clearPulses();
 	void addModule(int id, int ch0, int ch1);
-	PMT &getPMTAtCh(int ch);
+	void write();
+	PMT& getPMTAtCh(int ch);
 	Module& getModuleWithID(int id);
 	Module& getModuleWithCh(int ch);
 	std::vector<Module> modules;

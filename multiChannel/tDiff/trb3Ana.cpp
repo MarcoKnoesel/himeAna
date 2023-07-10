@@ -33,17 +33,15 @@
 #include "Drawer.h"
 #include "PulseAna.h"
 #include "TRB3RawData.h"
-#include "TDiffData.h"
 #include "MessageAna.h"
 #include "Constants.h"
 #include "Helpers.h"
 #include "TStopwatch.h"
-#include "TROOT.h"
+#include "Convert.h"
 
 using std::cout;
 using std::endl;
 using std::vector;
-using std::to_string;
 using MF = hadaq::MessageFloat;
 
 //     _______________
@@ -111,19 +109,21 @@ void trb3Ana(const char *trb3dir, const char *dir, const char *filename, int tri
 			// convert hadaq::MessageFloat objects to Pulse objects for each channel
 			PulseAna::findPulses(input, hime);
 		}
-		// analyze pulses
+		// analyze pulses and write the results to the TTree inside "TDiffData output"
+		// and to the ToT-vs.-tDiff histograms of all HIME modules
 		PulseAna::evaluate(hime, output);
 
 		hc.hNMessages->Fill(nMessages);
 		output.fill();
 	}
 
-	cout << "[trb3Ana] Time elapsed:  " << to_string(stopwatch.RealTime()).data() << " s" << endl;
+	cout << "[trb3Ana] Time elapsed:  " << Convert::toStr(stopwatch.RealTime()).Data() << " s" << endl;
 
 	// ---------------- Write data and plot histograms ----------------
 
 	if(write){
 		output.write();	// do this at first, because it does "cd" to the output file
+		hime.write();
 		hc.write();
 	}
 	if(plot){

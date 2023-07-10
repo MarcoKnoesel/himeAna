@@ -49,7 +49,7 @@ namespace PulseAna{
 	/*
 		Calculate tDiff for all modules and ToT for all PMTs.
 	*/
-	void evaluate(const Detector &d, TDiffData &output);
+	void evaluate(Detector &d, TDiffData &output);
 
 	/*
 		Check if a certain module registered a hit

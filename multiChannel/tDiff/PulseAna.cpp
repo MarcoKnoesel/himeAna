@@ -78,7 +78,7 @@ void PulseAna::appendMessageToPulseSequence(const MF &m, vector<Pulse> &pulses){
 
 
 
-void PulseAna::evaluate(const Detector &d, TDiffData &output){
+void PulseAna::evaluate(Detector &d, TDiffData &output){
 	
 	// IDs of modules that registered a hit in the current event
 	vector<int> m;
@@ -98,11 +98,15 @@ void PulseAna::evaluate(const Detector &d, TDiffData &output){
 		const vector<Pulse> &pulses_left_up = d.modules[m[iHit]].pmt_left_up().pulses;
 		const vector<Pulse> &pulses_right_down = d.modules[m[iHit]].pmt_right_down().pulses;
 
+		// fill "TDiffData &output", which contains a TTree object
 		output.tDiff[iHit] = pulses_right_down[0].getStampRising() - pulses_left_up[0].getStampRising();
 		output.tSum[iHit] = pulses_right_down[0].getStampRising() + pulses_left_up[0].getStampRising();
 		output.tot0[iHit] = pulses_left_up[0].getTot();
 		output.tot1[iHit] = pulses_right_down[0].getTot();
 		output.moduleID[iHit] = m[iHit];
+
+		// fill histograms showing ToT vs. time difference
+		d.modules[m[iHit]].fill(output.tDiff[iHit], std::sqrt(output.tot0[iHit] * output.tot1[iHit]));
 	}
 }
 

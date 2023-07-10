@@ -109,9 +109,15 @@ void Detector::clearPulses(){
 
 
 void Detector::addModule(int id, int ch0, int ch1){
-	modules[id] = Module(ch0, ch1);
+	modules[id] = Module(id, ch0, ch1);
 	reverseSearchChannelToModule[ch0] = id;
 	reverseSearchChannelToModule[ch1] = id;
+}
+
+
+
+void Detector::write(){
+	for(Module& m : modules) m.writeIfFilled();
 }
 
 
@@ -130,7 +136,7 @@ Module& Detector::getModuleWithCh(int ch){
 
 
 
-PMT & Detector::getPMTAtCh(int ch){
+PMT& Detector::getPMTAtCh(int ch){
 	Module &m = getModuleWithCh(ch);
 	if(m.pmts[0].ch == ch) return m.pmts[0];
 	return m.pmts[1];

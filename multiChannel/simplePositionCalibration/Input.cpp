@@ -21,6 +21,7 @@
 
 #include "Input.h"
 #include "Constants.h"
+#include "Convert.h"
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -34,16 +35,20 @@ Input::Input(const char *trb3dir, const char *subdir, std::vector<const char*> f
 
 	for(int iFile = 0; iFile < filenames.size(); iFile++){
 
-		TString pathIn = TString(trb3dir) + "/data/totVsTDiffHistograms/" + TString(subdir) + "/" + TString(filenames[iFile]);
+		TString pathIn = TString(trb3dir) + "/data/tDiff/" + TString(subdir) + "/" + TString(filenames[iFile]);
 		cout << "[Input] Reading file " << pathIn << endl;
 		files[iFile] = new TFile(pathIn, "read");
 		
 		for(int mod = 0; mod < Constants::nModules; mod++){
 
-			TString histName("hTotVsTDiff_");
-			histName += std::to_string(mod).data();
+			TString histName("hTotVsTDiff_module_");
+			histName += Convert::toNdigit(mod, 3);
 		
-			modules[mod].add((TH2F*) files[iFile]->Get(histName));
+			// It is possible that some of the modules were not active, so there will be no histogram.
+			TH2F* currentHistogram = (TH2F*) files[iFile]->Get(histName);
+			if(currentHistogram){
+				modules[mod].add(currentHistogram);
+			}
 		}
 		if(iFile) files[iFile]->Close();
 	}

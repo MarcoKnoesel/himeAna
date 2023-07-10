@@ -29,14 +29,21 @@
 
 #include <array>
 #include "PMT.h"
+#include "TH2F.h"
+
 
 class Module{
 	public:
 	Module(){}
-	Module(int ch_left_up, int ch_right_down);
+	Module(int id, int ch_left_up, int ch_right_down);
 	std::array<PMT,2> pmts;
 	inline PMT pmt_left_up() const { return pmts[0]; }
 	inline PMT pmt_right_down() const { return pmts[1]; }
+	inline void fill(float tDiff, float tot) { hTotVsTDiff.Fill(tDiff, tot); }
+	void writeIfFilled();
+
+	private:
+	TH2F hTotVsTDiff;
 };
 
 #endif
