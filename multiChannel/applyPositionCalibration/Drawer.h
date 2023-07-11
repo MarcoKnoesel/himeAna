@@ -19,24 +19,17 @@
 	along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "Thresholds.h"
+#ifndef Drawer_h
+#define Drawer_h
 
-#include "CSVReader.h"
+#include "HistogramCollection.h"
+#include "Module.h"
 
-using std::vector;
-using std::string;
+class Drawer{
+	public:
+	Drawer(){}
+	void drawOverview(const HistogramCollection& hc);
+	void drawLayer(const HistogramCollection& hc, int layer, const std::vector<Module>& modules);
+};
 
-
-
-Thresholds::Thresholds(TString pathtoCSVFile, int nModules){
-
-	thresholds = vector<float>(nModules, -1.);
-	vector<vector<string>> dataFromCSVFile = CSVReader::read(pathtoCSVFile, 2);
-
-	for(vector<string> &dataFromOneLine : dataFromCSVFile){
-
-		int moduleID = std::stoi(dataFromOneLine[0]);
-		float threshold = std::stof(dataFromOneLine[1]);
-		thresholds[moduleID] = threshold;
-	}
-}
+#endif

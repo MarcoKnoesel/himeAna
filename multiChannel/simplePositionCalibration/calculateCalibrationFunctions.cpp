@@ -42,7 +42,9 @@ void calculateCalibrationFunctions(const char *trb3dir, const char *subdir, vect
 	// ---------------- Import all correlation plots showing ToT vs TDiff ----------------
 
 	vector<Module> modules(Constants::nModules);
+	// set the names of the ToT-vs.-tDiff correlation plots and their projections
 	for(int id = 0; id < Constants::nModules; id++) modules[id].setID(id);
+	
 	Input input(trb3dir, subdir, filenames, modules);
 
 
@@ -74,7 +76,6 @@ void calculateCalibrationFunctions(const char *trb3dir, const char *subdir, vect
 		const float invC = 1. / 299.792458;
 		cout << "[calculateCalibrationFunctions] Module " << mod << ": v_eff = (" << modules[mod].getVEff() * invC << " +- " << modules[mod].getVEffUnc() * invC << ") c" << endl;
 	}
-
 
 	// ---------------- write output ----------------
 

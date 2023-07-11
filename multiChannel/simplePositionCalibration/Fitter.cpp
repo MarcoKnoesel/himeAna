@@ -32,7 +32,7 @@ void Fitter::determineEdges(Module& m, float totCut){
 
 	const int firstYBin = m.hTotVsTDiff.GetYaxis()->FindBin(totCut);
 	const int lastYBin = m.hTotVsTDiff.GetYaxis()->GetNbins();
-	m.projection = *(m.hTotVsTDiff.ProjectionX("proj", firstYBin, lastYBin));
+	m.projection = *(m.hTotVsTDiff.ProjectionX(m.hTotVsTDiff.GetTitle(), firstYBin, lastYBin));
 
 	// determine start parameters and fit range
 	double mean = m.projection.GetMean();

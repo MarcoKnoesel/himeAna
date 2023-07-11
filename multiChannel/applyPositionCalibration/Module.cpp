@@ -23,7 +23,18 @@
 
 
 
-Module::Module(float x, float y, float z, bool isHorizontal){
+Module::Module(){
+	id = -1;
+	x = 0.;
+	y = 0.;
+	z = 0.;
+	isHorizontal = false;
+}
+
+
+
+Module::Module(int id, float x, float y, float z, bool isHorizontal){
+	this->id = id;
 	this->x = x;
 	this->y = y;
 	this->z = z;

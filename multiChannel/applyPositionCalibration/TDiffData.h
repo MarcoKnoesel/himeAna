@@ -38,6 +38,7 @@ class TDiffData{
 	inline float getTSum(int hit) const { return (*tSum)[hit]; }
 	inline float getTot0(int hit) const { return (*tot0)[hit]; }
 	inline float getTot1(int hit) const { return (*tot1)[hit]; }
+	inline float getCombinedTot(int hit) const { return std::sqrt((*tot0)[hit] * (*tot0)[hit]); }
 	inline int getModuleID(int hit) const { return (*moduleID)[hit]; }
 
 	// *** The following data is read from the TChain ***

@@ -22,6 +22,7 @@
 
 # ---------- settings ----------
 subdir=2022-11-30b
+filename=HIME_wall0_0000.root
 geometryFile=2022-10-11.csv
 thresholdsFile=2022-11-30b.csv
 # ------------------------------
@@ -31,18 +32,13 @@ source ../../common/common.sh
 make
 
 if [ $? -eq 0 ]; then
-	
-	fileCounter=0
-	
+
 	create_directory applyPositionCalibration "$subdir"
 
-	for filename in "$HIME_ANA_DIRECTORY"/data/tDiff/"$subdir"/*.root; do
-		check_threads "$fileCounter"
-		filename=$(basename "$filename")
-		$ROOT_CALL "applyCalibration( \"${HIME_ANA_DIRECTORY}\", \"${subdir}\", \"${filename}\", \"${geometryFile}\", \"${thresholdsFile}\", false)" > /dev/null &
-		fileCounter=`expr ${fileCounter} + 1`
-	done
+	# start 
+	filename=$(basename "$filename")
+	$ROOT_CALL "applyCalibration( \"${HIME_ANA_DIRECTORY}\", \"${subdir}\", \"${filename}\", \"${geometryFile}\", \"${thresholdsFile}\", true)"
 
 	wait
-	echo -e "\nloop.sh done."
+	echo -e "\nstart.sh done."
 fi;

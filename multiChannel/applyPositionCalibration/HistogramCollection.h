@@ -19,19 +19,27 @@
 	along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef Thresholds_h
-#define Thresholds_h
+#ifndef HistogramCollection_h
+#define HistogramCollection_h
 
-#include "TString.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TDiffData.h"
+#include "Thresholds.h"
+#include "PosCalData.h"
 #include <vector>
 
-class Thresholds{
+
+
+class HistogramCollection{
 	public:
-	Thresholds(){}
-	Thresholds(TString pathtoCSVFile, int nModules);
-	inline float operator[](int moduleID) const { return thresholds[moduleID]; }
-	private:
-	std::vector<float> thresholds;
+	HistogramCollection(){};
+	HistogramCollection(int nLayers);
+	void fill(const TDiffData& input, const PosCalData& output, const Thresholds& thrs);
+	void write() const;
+	TH1F hZ;
+	TH2F hPos;
+	std::vector<TH2F> hPosLayer;
 };
 
 #endif

@@ -21,6 +21,9 @@
 
 #include "Helpers.h"
 #include "Constants.h"
+#include <cmath>
+
+using std::vector;
 
 
 
@@ -32,4 +35,29 @@ int Helpers::getLayer(int moduleID){
 
 bool Helpers::isHorizontal(int moduleID){
 	return getLayer(moduleID) & 1;
+}
+
+
+
+int Helpers::countLayers(const vector<Module>& modules){
+	
+	vector<int> zValues;
+
+	for(const Module& m : modules){
+
+		int zRound = std::roundl(m.z); // round the z position of each module to 1 mm precision
+		
+		if(!vectorContainsApprox(zValues, zRound)){
+			zValues.push_back(zRound);
+		}
+	}
+	
+	return zValues.size();
+}
+
+
+
+bool Helpers::vectorContainsApprox(const vector<int>& vec, int x){
+	for(int entry : vec) if( std::abs(entry - x) <= 1 ) return true;
+	return false;
 }

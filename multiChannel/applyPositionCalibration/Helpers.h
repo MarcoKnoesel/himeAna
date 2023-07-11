@@ -22,9 +22,14 @@
 #ifndef Helpers_h
 #define Helpers_h
 
+#include <vector>
+#include "Module.h"
+
 namespace Helpers{
 	int getLayer(int moduleID);
 	bool isHorizontal(int moduleID);
+	int countLayers(const std::vector<Module>& modules);
+	bool vectorContainsApprox(const std::vector<int>& vec, int x);
 };
 
 #endif

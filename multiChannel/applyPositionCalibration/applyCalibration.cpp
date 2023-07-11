@@ -21,14 +21,13 @@
 
 #include "applyCalibration.h"
 #include "ProgressIndicator.h"
-#include "PosCalData.h"
+#include "HistogramCollection.h"
 #include "CalibrationFunctions.h"
 #include "Constants.h"
 #include "CSVReader.h"
 #include "Helpers.h"
-#include "Module.h"
 #include "TRandom2.h"
-#include <vector>
+#include "Drawer.h"
 #include <string>
 #include <iostream>
 using std::vector;
@@ -38,7 +37,7 @@ using std::endl;
 
 
 
-void applyCalibration(const char *trb3dir, const char *dir, const char *filename, const char *geometryFile){
+void applyCalibration(const char* trb3dir, const char* dir, const char* filename, const char* geometryFile, const char* thresholdsFile, bool plot){
 
 	// ---------------- Input ----------------
 	TDiffData input(TString(trb3dir ) + "/data/tDiff/" + TString(dir), filename);
@@ -58,10 +57,16 @@ void applyCalibration(const char *trb3dir, const char *dir, const char *filename
 	// csv data contains: entry 0 -> moduleID; entry 1 -> position x; entry 1 -> position y; entry 1 -> position z
 	for(const vector<string> &line : csvData){
 		int moduleID = std::stoi(line[0]);
-		modules[moduleID] = Module(std::stof(line[1]), std::stof(line[2]), std::stof(line[3]), std::stoi(line[4]));
+		modules[moduleID] = Module(moduleID, std::stof(line[1]), std::stof(line[2]), std::stof(line[3]), std::stoi(line[4]));
 	}
 
+	// ---------------- Get thresholds for all modules ----------------
+	// The thresholds will NOT apply a cut on the data that are written to the output TTree object!
+	// Only the data shown in the histograms of "HistogramCollection hc" are affected.
+	Thresholds thrs(TString(trb3dir) + "/data/thresholds/" + TString(thresholdsFile), modules.size());
+
 	// ---------------- Loop over events: Apply calibration on event-by-event basis ----------------
+	HistogramCollection hc(Helpers::countLayers(modules));
 	TRandom2 randgen;
 	ProgressIndicator pi(nEvents, "[calibration] Writing calibrated data. Processed events:");
 
@@ -98,9 +103,18 @@ void applyCalibration(const char *trb3dir, const char *dir, const char *filename
 			output.z[hit] = m.z + Constants::moduleDepth * (randgen.Uniform() - 0.5);
 		}
 		
+		// fill all histograms
+		hc.fill(input, output, thrs);
+
 		// fill the TTree for the current event, go to next one
 		output.fill();
 	}
 
 	output.write();
+	hc.write();
+
+	if(!plot) return;
+	Drawer dr;
+	dr.drawOverview(hc);
+	for(int layer = 0; layer < hc.hPosLayer.size(); layer++) dr.drawLayer(hc, layer, modules);
 }

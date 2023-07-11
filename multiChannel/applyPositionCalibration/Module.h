@@ -24,8 +24,9 @@
 
 class Module{
 	public:
-	Module(){}
-	Module(float x, float y, float z, bool isHorizontal);
+	Module();
+	Module(int id, float x, float y, float z, bool isHorizontal);
+	int id;
 	float x;
 	float y;
 	float z;
