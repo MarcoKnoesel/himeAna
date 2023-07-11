@@ -1,5 +1,6 @@
 # HIMEana - Analyze HIME Data
 
+## Copyright Notice and License
 HIMEana serves to analyze data from the Neutron Detector 
 "HIgh-resolution detector array for Multi-neutron Events" (HIME).
 
@@ -22,6 +23,7 @@ along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
 
 ## Contents
 - [HIMEana - Analyze HIME Data](#himeana---analyze-hime-data)
+  - [Copyright Notice and License](#copyright-notice-and-license)
   - [Contents](#contents)
   - [Initial Setup](#initial-setup)
   - [Structure of the HIMEana Tools](#structure-of-the-himeana-tools)
@@ -29,7 +31,8 @@ along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
     - [Steps of the multiChannel Analysis](#steps-of-the-multichannel-analysis)
     - [Common Source Code](#common-source-code)
   - [Compile and Start](#compile-and-start)
-- [The Stream framework](#the-stream-framework)
+  - [Files taken from the Stream framework](#files-taken-from-the-stream-framework)
+    - [Copyright Notice and License for the Stream Framework](#copyright-notice-and-license-for-the-stream-framework)
 
 ## Initial Setup
 1. Go to directory `data` and create a symbolic link called `unpacked` that points towards your unpacked data:
@@ -75,11 +78,13 @@ Four each component (`fourChannel` and each step of `multiChannel`) of HIMEana, 
 
 If you only want to compile a component of HIMEana, without starting it directly, simply type `make` in the corresponding directory. In order to compile from scratch, type `make clean` at first. Starting an analysis should **always** be done using one of the shell scripts! Note that the source code in `common` needs to be compiled separately, i.e., it is **not** sufficient to compile `fourChannel` or one of the `multiChannel` components, if code inside `common` is modified.
 
-# The Stream framework
+## Files taken from the Stream framework
 HIMEana contains the following files that were taken from the Stream framework and modified:
 - `common/stream/HldProcessor.h`
 - `common/stream/TdcSubEvent.h`
 - `common/stream/TrbProcessor.h`
+
+### Copyright Notice and License for the Stream Framework
 
 Copyright (C) 2013 -
 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
