@@ -58,17 +58,20 @@ In the directories `data/thresholds`, `data/geometry/` and `data/channelMapping/
 3. `data/geometry/`: Lists the positions of all modules.
 
 ### Steps of the multiChannel Analysis
-In the following, the individual parts of the multiChannel analysis are listed.
+In the following, the individual parts of the multiChannel analysis are listed. They use data from each other, shared in the directory `data`, and thus should be applied in the right order.
+
 1. `tDiff`: The bare unpacked data contain time stamps for the rising and falling edges of all signals in each channel, as well as the number of the trigger signal of each event. In this analysis step, the ToT values and the time differences of detection in the two PMTs of each module are calculated from the sequences of signals. Besides, one can select data from a specific trigger type.
 2. Position calibration (two choices):
-   - either simple:
-     1. `simplePositionCalibration`: Treats each module individually and calculates each linear calibration function from two data pairs (consisting of time difference and position) only. Rather simple and robust method.
+   - either simple: \
+     `simplePositionCalibration`: Treats each module individually and calculates each linear calibration function from two data pairs (consisting of time difference and position) only. Rather simple and robust method.
    - or based on muon tracking:
      1. `trackingForPositionCalibration`: Tracks cosmic muons through the detector and writes down correlation plots of time differences (i.e., time difference of detection of the signals of the two PMTs of each module) and muon position for each module. This is a rather complicated method, so its results should be checked carefully. It gets more precise with a larger number of layers and modules.
      2. `positionCalibrationFromTracking`: Fits linear calibration functions to the previously determined correlation plots.
 3. `applyPositionCalibration`: Applies the position calibration on the data.
 4. `trackingForEnergyCalibration`: Tracks again muons in HIME, but makes use of the position calibration. The results are correlation plots of ToT and muon-energy deposition. The latter is calculated from the track lengths of the cosmic particles inside each module.
 5. `energyCalibration`: Fits calibration functions to the previously determined correlation plots.
+
+Besides, there is a tool called `sumUp` in `multiChannel`, which serves to sum up spectra and correlation plots from all runs of the same experiment. It is not a part of the calibration procedure, but can be used for visualization after some of the individual analysis steps.
 
 ### Common Source Code
 Some of the functionality of HIMEana is shared between its individual analysis steps: For instance, the reader for CSV files is required in multiple components of `multiChannel`. Usually, it will not be necessary to modify the corresponding source code, but if necessary, this can be done in the subdirectories of `common`. After the modifications are done, recompile by going to `common` and executing `compileCommons.sh`.
