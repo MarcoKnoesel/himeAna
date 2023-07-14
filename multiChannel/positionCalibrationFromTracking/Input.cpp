@@ -32,7 +32,7 @@ Input::Input(TString path, vector<Module>& modules){
 	file = new TFile(path, "read");
 
 	for(int moduleID = 0; moduleID < Constants::nModules; moduleID++){
-		TString histName("hPosVsTDiff_module_" + Convert::toStr(moduleID));
+		TString histName("hPosVsTDiff_module_" + Convert::toNdigit(moduleID, 3));
 		modules[moduleID] = Module(moduleID, (TH2F*) file->Get(histName));
 	}
 }

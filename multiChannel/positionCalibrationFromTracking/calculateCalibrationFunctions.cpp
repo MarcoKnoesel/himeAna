@@ -62,6 +62,7 @@ void calculateCalibrationFunctions(TString trb3dir, TString subdir, int nCountsP
 	// ---------------- Write ----------------
 	TFile* fileOut = new TFile(trb3dir + "/data/positionCalibrationFromTracking/" + subdir + "/calibration.root", "recreate");
 	hc.write(fileOut);
+	for(const Module& m: modules) m.write(fileOut);
 
 	// ---------------- Draw ----------------
 	Drawer dr;

@@ -35,6 +35,7 @@ class Module{
 	double getPositionOffset() const { return posCalFunc->GetParameter(1); }
 	double getEffectiveVelocityUnc() const { return posCalFunc->GetParError(0); }
 	double getPositionOffsetUnc() const { return posCalFunc->GetParError(1); }
+	void write(TFile* file) const;
 	bool calibrationSuccessful;
 	int id;
 	TF1* posCalFunc;

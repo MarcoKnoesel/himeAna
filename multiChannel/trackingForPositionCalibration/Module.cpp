@@ -21,22 +21,22 @@
 
 #include "Module.h"
 #include "TAxis.h"
+#include "Convert.h"
 
 using std::array;
-using std::to_string;
 
 
 
 Module::Module(int id, int layer, bool horizontal, float x, float y, float z){
 
 	// initialize TH2F for (tDiff, pos) data pairs
-	hPosVsTDiff = new TH2F(TString("hPosVsTDiff_module_") + to_string(id), "", 100, -20, 20, 100, -500, 500);
+	hPosVsTDiff = new TH2F(TString("hPosVsTDiff_module_") + Convert::toNdigit(id, 3), "", 100, -20, 20, 100, -500, 500);
 
 	// set title for TGraph and TH2F
 	TString title("Module ");
-	title += to_string(id);
+	title += Convert::toStr(id);
 	title += ", layer ";
-	title += to_string(layer);
+	title += Convert::toStr(layer);
 	title += horizontal ? " (horizontal)" : " (vertical)";
 	hPosVsTDiff->SetTitle(title);
 

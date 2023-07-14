@@ -34,6 +34,13 @@ Module::Module(){
 Module::Module(int id, const TH2F* hPosVsTDiff){
 	this -> id = id;
 	this -> hPosVsTDiff = TH2F(*hPosVsTDiff);
-	posCalFunc = new TF1("posCalFunc_" + Convert::toStr(id), "[0] / 2. * x + [1]", -Constants::moduleLength / 2., Constants::moduleLength / 2.);
+	posCalFunc = new TF1("posCalFunc_" + Convert::toNdigit(id, 3), "[0] / 2. * x + [1]", -Constants::moduleLength / 2., Constants::moduleLength / 2.);
 	calibrationSuccessful = false;
+}
+
+
+
+void Module::write(TFile* file) const {
+	file->cd();
+	hPosVsTDiff.Write();
 }
