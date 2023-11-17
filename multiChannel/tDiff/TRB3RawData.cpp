@@ -22,6 +22,7 @@
 #include "TRB3RawData.h"
 
 #include "Constants.h"
+#include "TString.h"
 
 #include <iostream>
 
@@ -60,11 +61,18 @@ TRB3RawData::TRB3RawData(TString path){
 	// Set branch addresses for messages of all peripheral TDCs
 	fTdcNames = vector<TString>(Constants::nTdcs);
 	fTdcs = vector<vector<MF>*>(Constants::nTdcs, nullptr);
+	int tdcCounter = 0;
 
-	for(int i = 0; i < fTdcNames.size(); i++){
-		fTdcNames[i] = (*fTree->GetListOfBranches())[i+2]->GetName();
-		fTree->SetBranchAddress( fTdcNames[i], &(fTdcs[i]) );
-		cout << "[TRB3RawData] Found TDC \"" << fTdcNames[i] << "\"" << endl;
+	// Loop over all branches of the tree and check if their names start with "TDC".
+	// If so, set the branch address to the address of one of the vector<MF>* pointers.
+	for(TObject* branch:  *fTree->GetListOfBranches()){
+		TString name = branch->GetName();
+		if(!name.BeginsWith("TDC")) continue;
+		fTdcNames[tdcCounter] = name;
+		fTree->SetBranchAddress( fTdcNames[tdcCounter], &(fTdcs[tdcCounter]) );
+		cout << "[TRB3RawData] Found TDC \"" << fTdcNames[tdcCounter] << "\"" << endl;
+		tdcCounter++;
+		if( tdcCounter >= fTdcNames.size() ) break;
 	}
 
 	// Set branch address for run information
