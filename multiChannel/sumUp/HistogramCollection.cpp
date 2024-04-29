@@ -31,7 +31,7 @@ using std::pair;
 
 void HistogramCollection::addHistogram(const TObject& obj, const TString& className, const char* name, int run, bool verbose){
 
-	if(verbose) cout << "[HistogramCollection] Found " << className.Data() << name << endl;
+	if(verbose) cout << "[HistogramCollection] Found " << className.Data() << " " << name << endl;
 	
 	try{
 		if( className.EqualTo("TH1F") ){

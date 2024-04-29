@@ -60,9 +60,9 @@ In the directories `data/thresholds`, `data/geometry/` and `data/channelMapping/
 ### Steps of the multiChannel Analysis
 In the following, the individual parts of the multiChannel analysis are listed. They use data from each other, shared in the directory `data`, and thus should be applied in the right order.
 
-1. `tDiff`: The bare unpacked data contain time stamps for the rising and falling edges of all signals in each channel, as well as the number of the trigger signal of each event. In this analysis step, the ToT values and the time differences of detection in the two PMTs of each module are calculated from the sequences of signals. Besides, one can select data from a specific trigger type.
+1. `tDiff`: The bare unpacked data contain time stamps for the rising and falling edges of all signals in each channel, as well as the number of the trigger signal of each event. In this analysis step, the ToT values and the time differences of detection in the two PMTs of each module are calculated from the sequences of signals. Besides, one can select data from a specific trigger type. In order to assign channel numbers to module IDs (two channels for each module), one can either use a CSV file in `data/channelMapping/` or a hard-coded definition in one of the overloaded constructers of class `Detector`. Make sure to call the right constructor in `multichannel/tDiff/trb3Ana.cpp`.
 2. Position calibration (two choices):
-   - either simple: \
+   - either simple: 
      `simplePositionCalibration`: Treats each module individually and calculates each linear calibration function from two data pairs (consisting of time difference and position) only. Rather simple and robust method.
    - or based on muon tracking:
      1. `trackingForPositionCalibration`: Tracks cosmic muons through the detector and writes down correlation plots of time differences (i.e., time difference of detection of the signals of the two PMTs of each module) and muon position for each module. This is a rather complicated method, so its results should be checked carefully. It gets more precise with a larger number of layers and modules.

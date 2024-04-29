@@ -32,7 +32,12 @@ Detector::Detector(){
 	modules = vector<Module>(Constants::nModules);
 	reverseSearchChannelToModule = vector<int>(2 * modules.size(), -1);
 
+	//
 	// *** Here, the individual channels/PMTs are assigned to modules ***
+	//
+	// Don't forget to call the right constructor in trb3Ana.cpp!
+	// The constructor of this class is overloaded (see below for more constructors)!
+	//
 
 	/*for(int i = 0; i < modules.size(); i++){
 		addModule(i, 2 * i, 2 * i + 1);
