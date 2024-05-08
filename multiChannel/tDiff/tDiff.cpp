@@ -24,7 +24,7 @@
  * The results are written to a TTree.
  */
 
-#include "trb3Ana.h"
+#include "tDiff.h"
 
 #include <vector>
 #include <iostream>
@@ -57,7 +57,7 @@ using MF = hadaq::MessageFloat;
 
 
 
-void trb3Ana(const char *trb3dir, const char *dir, const char *filename, int trigger, bool write, bool plot){
+void tDiff(const char *trb3dir, const char *dir, const char *filename, int trigger, bool write, bool plot){
 
 	/*
 	 * Set the number of TDCs and the number of channels per TDC in "Constants.h"!
@@ -69,8 +69,7 @@ void trb3Ana(const char *trb3dir, const char *dir, const char *filename, int tri
 	TRB3RawData input(TString(trb3dir) + "/data/unpacked/" + TString(dir) + "/" + TString(filename));
 	const int nEvents = input.getNEvents();
 	//Detector hime;
-	//Detector hime(TString(trb3dir) + "/data/channelMapping/2022-10-11.csv");
-	Detector hime(TString(trb3dir) + "/data/channelMapping/2022-11-28.csv");
+	Detector hime(TString(trb3dir) + "/data/channelMapping/2024-03-17.csv");
 
 	// ---------------- Output ----------------
 
@@ -78,7 +77,7 @@ void trb3Ana(const char *trb3dir, const char *dir, const char *filename, int tri
 
 	// ---------------- Loop over events ----------------
 
-	ProgressIndicator pi(nEvents, "[trb3Ana] Processed events:");
+	ProgressIndicator pi(nEvents, "[tDiff] Processed events:");
 	HistogramCollection hc(nEvents);
 	TStopwatch stopwatch;
 
@@ -117,7 +116,7 @@ void trb3Ana(const char *trb3dir, const char *dir, const char *filename, int tri
 		output.fill();
 	}
 
-	cout << "[trb3Ana] Time elapsed:  " << Convert::toStr(stopwatch.RealTime()).Data() << " s" << endl;
+	cout << "[tDiff] Time elapsed:  " << Convert::toStr(stopwatch.RealTime()).Data() << " s" << endl;
 
 	// ---------------- Write data and plot histograms ----------------
 

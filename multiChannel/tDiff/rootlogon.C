@@ -21,6 +21,6 @@
 
 {
 	std::cout << "Loading rootlogon.C..." << std::endl;
-	gROOT->ProcessLine(".L trb3Ana.h");
-	gROOT->ProcessLine(".L libTRB3Ana.so");
+	gROOT->ProcessLine(".L tDiff.h");
+	gROOT->ProcessLine(".L libTDiff.so");
 }

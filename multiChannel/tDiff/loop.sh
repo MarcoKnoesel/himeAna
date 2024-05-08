@@ -39,7 +39,7 @@ if [ $? -eq 0 ]; then
 	for filename in "$HIME_ANA_DIRECTORY"/data/unpacked/"$subdir"/*.root; do
 		check_threads "$fileCounter"
 		filenameBase=$(basename "$filename")
-		$ROOT_CALL "trb3Ana(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",\"${filenameBase}\",${trigger},true,false)" > /dev/null &
+		$ROOT_CALL "tDiff(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",\"${filenameBase}\",${trigger},true,false)" > /dev/null &
 		fileCounter=`expr ${fileCounter} + 1`
 	done
 

@@ -20,14 +20,15 @@
 
 headers := $(wildcard *.h)
 sources := $(wildcard *.cpp)
+target := libTDiff.so
 
 .PHONY: clean
 
-libTRB3Ana.so: $(sources) $(headers)
+$(target): $(sources) $(headers)
 	g++ -shared -fPIC -O2 -o $@ $(sources) $(shell root-config --cflags --libs) -I. -I../../common/hime -I../../common/stream -L../../common/lib -lCommon -lStream
 
 clean:
-	rm -f libTRB3Ana.so
+	rm -f $(target)
 
 
 

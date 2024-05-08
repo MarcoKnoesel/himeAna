@@ -75,14 +75,14 @@ Detector::Detector(const char* path_to_csv_file){
 		int ch_r_d_raw 	= std::stoi(entries[1]);
 		int ch_l_u_raw 	= std::stoi(entries[2]);
 		int layer 		= std::stoi(entries[3]);
-		int mod_raw 	= std::stoi(entries[4]);
+		int sub_module 	= std::stoi(entries[4]);
 		int chain 		= std::stoi(entries[5]);
 		int tdc  		= std::stoi(entries[6]);
 
 		int channelOffset = chain * 16 + tdc * 48 + wall * 100;
 
 		addModule(
-			layer * 24 + 7 + mod_raw, 
+			layer * 24 + sub_module, 
 			ch_l_u_raw + channelOffset,
 			ch_r_d_raw + channelOffset 
 		);

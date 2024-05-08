@@ -38,7 +38,7 @@ if [ $? -eq 0 ]; then
 
 	# start 
 	filename=$(basename "$filename")
-	$ROOT_CALL "trb3Ana(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",\"${filename}\",${trigger},${write},${plot})" 
+	$ROOT_CALL "tDiff(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",\"${filename}\",${trigger},${write},${plot})" 
 
 	wait
 	echo -e "\nstart.sh done."

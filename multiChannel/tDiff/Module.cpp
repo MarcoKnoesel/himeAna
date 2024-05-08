@@ -24,7 +24,7 @@
 
 Module::Module(int id, int ch_left_up, int ch_right_down){
 	pmts = {PMT(ch_left_up), PMT(ch_right_down)};
-	hTotVsTDiff = TH2F("hTotVsTDiff_module_" + Convert::toNdigit(id, 3), "ToT vs. tDiff for Module " + Convert::toStr(id), 240, -30, 30, 100, 0, 50);
+	hTotVsTDiff = TH2F("hTotVsTDiff_module_" + Convert::toNdigit(id, 3), "ToT vs. tDiff for Module " + Convert::toStr(id), 320, -40, 40, 100, 0, 50);
 }
 
 void Module::writeIfFilled(){

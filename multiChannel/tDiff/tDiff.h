@@ -19,9 +19,9 @@
 	along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef trb3Ana_h
-#define trb3Ana_h
+#ifndef tDiff_h
+#define tDiff_h
 
-void trb3Ana(const char *trb3dir, const char *dir, const char *filename, int trigger = -1, bool write = true, bool plot = true);
+void tDiff(const char *trb3dir, const char *dir, const char *filename, int trigger = -1, bool write = true, bool plot = true);
 
 #endif
