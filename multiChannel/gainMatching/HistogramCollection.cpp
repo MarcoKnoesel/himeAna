@@ -30,12 +30,12 @@ using std::vector;
 
 
 
-HistogramCollection::HistogramCollection(const vector<float>& voltages, int nModules, float desiredToT){
+HistogramCollection::HistogramCollection(const vector<float>& voltages, float desiredToT){
 
 	// initialize histograms showing general information about the gain-matching procedure 
 	// for all modules
 	hVecNHits = vector<TH1F>(voltages.size());
-	histogramsFitPar.fill(vector<TH1F>(nModules));
+	histogramsFitPar.fill(vector<TH1F>(Constants::nChTot));
 
 	vector<TString> parameter_str = {"height", "position", "width"};
 	vector<TString> parameter_unit = {"", "(ns)", "(ns)"};
@@ -43,39 +43,39 @@ HistogramCollection::HistogramCollection(const vector<float>& voltages, int nMod
 
 	// create histogram names and axis titles containing the module IDs
 	// and the voltages that have been set in the measurements
-
-	for(int iPar = 0; iPar < 3; iPar++){
-
-		for(int iVoltage = 0; iVoltage < voltages.size(); iVoltage++){
+	for(int iVoltage = 0; iVoltage < voltages.size(); iVoltage++){
 
 			TString voltage_str = Convert::toStr(voltages[iVoltage]);
 			TString hNHitsName("hNHits" + voltage_str + "V");
-			hVecNHits[iVoltage] = TH1F(hNHitsName, "", Constants::nModules, 0, Constants::nModules);
+			hVecNHits[iVoltage] = TH1F(hNHitsName, "", Constants::nChTot, 0, Constants::nChTot);
 			hVecNHits[iVoltage].GetXaxis()->SetTitle("Module ID");
 			hVecNHits[iVoltage].GetYaxis()->SetTitle("Number of hits");
 
+
+		for(int iPar = 0; iPar < 3; iPar++){
 			// parameters of the Gaussian muon-peak fits
 			TString name("h_" + voltage_str + "V_" + parameter_str[iPar]);
 			TString title("Fit parameter " + parameter_str[iPar] + " for " + voltage_str + " V");
 			TString yAxisTitle("Fit parameter " + parameter_str[iPar] + " " + parameter_unit[iPar]);
 
-			histogramsFitPar[iPar][iVoltage] = TH1F(name, title, nModules, 0, nModules);
+			histogramsFitPar[iPar][iVoltage] = TH1F(name, title, Constants::nChTot, 0, Constants::nChTot);
 			histogramsFitPar[iPar][iVoltage].GetXaxis()->SetTitle("Module ID");
 			histogramsFitPar[iPar][iVoltage].GetYaxis()->SetTitle(yAxisTitle);
-
 		}
-		
+	}
+
+	for(int iPar = 0; iPar < 3; iPar++){
 		// parameters of the fits for voltage vs. ToT
 		TString name("hGainFitParameter" + Convert::toStr(iPar));
 		TString title("Gain-fit parameter " + Convert::toStr(iPar));
 		TString yAxisTitle("Gain-fit parameter " + Convert::toStr(iPar) + " " + gainFit_parameter_unit[iPar]);
 
-		histogramsGainFitPar[iPar] = TH1F(name, title, nModules, 0, nModules);
+		histogramsGainFitPar[iPar] = TH1F(name, title, Constants::nChTot, 0, Constants::nChTot);
 		histogramsGainFitPar[iPar].GetXaxis()->SetTitle("Module ID");
 		histogramsGainFitPar[iPar].GetYaxis()->SetTitle(yAxisTitle);
 	}
 
-	hTargetVoltages = TH1F("hTargetVoltages", "Voltages required for a ToT of " + Convert::toStr(desiredToT) + " ns", Constants::nModules, 0, Constants::nModules);
+	hTargetVoltages = TH1F("hTargetVoltages", "Voltages required for a ToT of " + Convert::toStr(desiredToT) + " ns", Constants::nChTot, 0, Constants::nChTot);
 	hTargetVoltages.GetXaxis()->SetTitle("Module ID");
 	hTargetVoltages.GetYaxis()->SetTitle("Voltage (V)");
 }
@@ -84,42 +84,48 @@ HistogramCollection::HistogramCollection(const vector<float>& voltages, int nMod
 
 void HistogramCollection::fill(const vector<Module>& modules){
 
-	for(int moduleID = 0; moduleID < Constants::nModules; moduleID++){
+	for(const Module& m: modules){
 
 		// get target voltages from the fit result of the gain-matching TGraph objects
-		hTargetVoltages.SetBinContent(moduleID+1, modules[moduleID].getTargetVoltage());
 
-		// iterate over the voltages that have been set for the different measurements
-		for(int iVoltage = 0; iVoltage < modules[moduleID].hVecTot.size(); iVoltage++){
+		for(int pmt = 0; pmt < 2; pmt++){
 
-			double nEntries = modules[moduleID].hVecTot[iVoltage].GetEntries();
+			int bin = m.getChannels()[pmt] + 1;
+			
+			hTargetVoltages.SetBinContent(bin, m.getTargetVoltages()[pmt]);
 
-			// skip ToT spectra without hits
-			if(!nEntries) continue;
-		
-			hVecNHits[iVoltage].SetBinContent(moduleID+1, nEntries);
+			// iterate over the voltages that have been set for the different measurements
+			for(int iVoltage = 0; iVoltage < m.hVecTot[pmt].size(); iVoltage++){
 
-			// 3 fit parameters of the Gaussian ToT fits
+				double nEntries = m.hVecTot[pmt][iVoltage].GetEntries();
+
+				// skip ToT spectra without hits
+				if(!nEntries) continue;
+			
+				hVecNHits[iVoltage].SetBinContent(bin, nEntries);
+
+				// 3 fit parameters of the Gaussian ToT fits
+				for(int iPar = 0; iPar < 3; iPar++){
+
+					histogramsFitPar[iPar][iVoltage].SetBinContent(bin, m.fits[pmt][iVoltage]->GetParameter(iPar));
+				}
+			}
+
+			// parameters of the fit for (ToT, voltage) data points
 			for(int iPar = 0; iPar < 3; iPar++){
 
-				histogramsFitPar[iPar][iVoltage].SetBinContent(moduleID + 1, modules[moduleID].fits[iVoltage].GetParameter(iPar));
+				if(iPar >= m.gainFits[pmt]->GetNpar()) break;
+
+				double parameterValue = m.gainFits[pmt]->GetParameter(iPar);
+
+				if(parameterValue < -1000. || parameterValue > 1000.){
+					cout << "[HisogramCollection] \e[1m\e[33mWarning:\e[0m The value " + Convert::toStr(parameterValue);
+					cout << " of parameter " + Convert::toStr(iPar) + " of channel " << m.getChannels()[pmt];
+					cout << " is outside of the range [-1000., 1000] and will be set to 0 in the corresponding histogram." << endl;
+					parameterValue = 0.;
+				}
+				histogramsGainFitPar[iPar].SetBinContent(bin + 1, parameterValue);
 			}
-		}
-
-		// parameters of the fit for (ToT, voltage) data points
-		for(int iPar = 0; iPar < 3; iPar++){
-
-			if(iPar >= modules[moduleID].gainFit.GetNpar()) break;
-
-			double parameterValue = modules[moduleID].gainFit.GetParameter(iPar);
-
-			if(parameterValue < -1000. || parameterValue > 1000.){
-				cout << "[HisogramCollection] \e[1m\e[33mWarning:\e[0m The value " + Convert::toStr(parameterValue);
-				cout << " of parameter " + Convert::toStr(iPar) + "of module " << modules[moduleID].getID();
-				cout << " is outside of the range [-1000., 1000] and will be set to 0 in the corresponding histogram." << endl;
-				parameterValue = 0.;
-			}
-			histogramsGainFitPar[iPar].SetBinContent(moduleID + 1, parameterValue);
 		}
 	}
 }

@@ -32,7 +32,7 @@ class HistogramCollection{
 	
 	public:
 	HistogramCollection(){}
-	HistogramCollection(const std::vector<float>& voltages, int nModules, float desiredToT);
+	HistogramCollection(const std::vector<float>& voltages, float desiredToT);
 	
 	// fill histograms
 	void fill(const std::vector<Module>& modules);

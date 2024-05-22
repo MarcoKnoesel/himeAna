@@ -21,6 +21,7 @@
 
 #include "SpectrumAna.h"
 #include "TF1.h"
+using std::array;
 
 
 
@@ -63,41 +64,38 @@ bool SpectrumAna::threePreceedingBinsHaveSmallerContent(const TH1F& h, int curre
 
 
 
-std::array<double,2> SpectrumAna::fitLastPeak(Module& m, int iVoltage){
-	
-	TH1F& h = m.hVecTot[iVoltage];	
+array<array<double,2>,3>  SpectrumAna::fitLastPeak(Module& m, int iVoltage){
 
-	// skip empty histograms
-	if(!h.GetEntries()) return {0., 0.};
+	array<array<double,2>,3> peakPositionsAndUncertainties;
 
-	// find the start parameters for the fit
-	int peakBin = findLastPeak(h);
-	float height_estimate = h.GetBinContent(peakBin);
-	float position_estimate = h.GetBinCenter(peakBin);
-	float width_estimate = 1.;
+	// loop over the individual ToT spectra of the two PMTs (indices 0 and 1)
+	// and the combined-ToT spectrum of the module (index 2)
+	for(int i = 0; i < 3; i++){
 
-	// set the start parameters for the fit
-	TF1& fit = m.fits[iVoltage];
-	fit.SetRange(0.9 * position_estimate, h.GetXaxis()->GetBinUpEdge(h.GetXaxis()->GetNbins()));
-	fit.SetParameter(0, height_estimate);
-	fit.SetParLimits(0, 0.1 * height_estimate, 10. * height_estimate);
-	fit.SetParameter(1, position_estimate);
-	fit.SetParameter(2, width_estimate);
+		TH1F& h = m.hVecTot[i][iVoltage];	
 
-	// to make ROOT happy:
-	//  -> clone TF1 fit, create a pointer
-	//  -> perform fit with the pointer
-	//  -> copy result to the original TF1 object
-	//  -> delete pointer
-	TF1* fitptr = (TF1*) fit.Clone();
-	h.Fit(fitptr, "rq0");
-	for(int i = 0; i < fit.GetNpar(); i++){
-		fit.SetParameter(i, fitptr->GetParameter(i));
-		fit.SetParError(i, fitptr->GetParError(i));
-	}
-	fitptr->Delete();
-	// --------------------------------
+		// skip empty histograms
+		if(!h.GetEntries()) return {0., 0.};
+
+		// find the start parameters for the fit
+		int peakBin = findLastPeak(h);
+		float height_estimate = h.GetBinContent(peakBin);
+		float position_estimate = h.GetBinCenter(peakBin);
+		float width_estimate = 1.;
+
+		// set the start parameters for the fit
+		TF1* fit = m.fits[i][iVoltage];
+		fit->SetRange(0.9 * position_estimate, h.GetXaxis()->GetBinUpEdge(h.GetXaxis()->GetNbins()));
+		fit->SetParameter(0, height_estimate);
+		fit->SetParLimits(0, 0.1 * height_estimate, 10. * height_estimate);
+		fit->SetParameter(1, position_estimate);
+		fit->SetParameter(2, width_estimate);
+
+		h.Fit(fit, "rqn");
+
+		peakPositionsAndUncertainties[i] = {fit->GetParameter(1), fit->GetParError(1)};
+	}	
 
 	// return the position of the peak in the ToT spectrum and its uncertainty
-	return {fit.GetParameter(1), fit.GetParError(1)};
+	return peakPositionsAndUncertainties;
 }

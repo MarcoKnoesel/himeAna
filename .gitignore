@@ -1,3 +1,4 @@
+data/gainMatching/*/*.csv
 multiChannel/furtherAna/
 rootfiles/
 .vscode/

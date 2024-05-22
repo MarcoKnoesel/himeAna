@@ -27,6 +27,7 @@
 using std::cout;
 using std::endl;
 using std::vector;
+using std::array;
 
 
 
@@ -52,17 +53,35 @@ void TDiffData::fillModules(vector<Module>& modules, int iVoltage) const {
 		TFile* f = new TFile(paths[iFile], "read");
 			
 		for(Module& m : modules){
-			TString name = "hTotVsTDiff_module_" + Convert::toNdigit(m.getID(), 3);
-			
-			TH2F* histogramFromFile = (TH2F*) f->Get(name);
 
+			TString nameOfModuleHistogram = "hTotVsTDiff_module_" + Convert::toNdigit(m.getID(), 3);
+			array<TH1F*,2> pmtHistograms = {nullptr, nullptr};
+			
+			// get the ToT histograms of the two channels which this module is connected to
+			bool histogramMissing = false;
+			for(int pmt = 0; pmt < 2; pmt++){
+				TString nameOfPMTHistogram = "hTot_ch_" + Convert::toNdigit(m.getChannels()[pmt], 3);
+				pmtHistograms[pmt] = (TH1F*) f->Get(nameOfPMTHistogram);
+				if(!pmtHistograms[pmt]){
+					histogramMissing = true;
+					break;
+				}
+			}
+			
+			// skip this module if any of the histograms is missing
+			if(histogramMissing) continue;
+
+			// get the ToT-vs.-tDiff correlation plot of this module
+			TH2F* histogramFromFile = (TH2F*) f->Get(nameOfModuleHistogram);
+
+			// skip this module if any of the histograms is missing
 			if(!histogramFromFile) continue;
 
-			m.fill(iVoltage, histogramFromFile);
+			// pass the histograms to the current instance of class Module
+			m.fill(iVoltage, histogramFromFile, pmtHistograms);
 		}
-
 		f->Close();
-		f->Delete();
+
 	}
 	return;
 }

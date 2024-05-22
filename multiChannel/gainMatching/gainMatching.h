@@ -24,6 +24,14 @@
 
 #include <vector>
 
-void gainMatching(const char* trb3dir, std::vector<float> voltages, std::vector<const char*> subdirs, std::vector<std::vector<const char*>> allFiles, float desiredToT, bool linearGainFitModel, const char* outputSubdir);
+void gainMatching(const char* trb3dir, 
+	std::vector<float> voltages, 
+	std::vector<const char*> subdirs, 
+	std::vector<std::vector<const char*>> allFiles, 
+	float desiredToT, 
+	bool linearGainFitModel, 
+	const char* outputSubdir, 
+	const char* channelMappingFilename
+);
 
 #endif

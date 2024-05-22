@@ -24,6 +24,7 @@
 #include "Convert.h"
 #include "TStyle.h"
 #include <cmath>
+using std::vector;
 
 
 
@@ -109,43 +110,65 @@ void Drawer::drawModule(Module& m, bool normalize){
 	
 	gStyle->SetOptStat(0);
 	
-	setColors(m.hVecTot);
-	setColors(m.fits);
-	setDashedLine(m.fits);
-	removeTitles(m.hVecTot);
-
 	TString name("can_module" + Convert::toNdigit(m.getID(), 3));
 	TCanvas* can = new TCanvas(name, "", 1800, 1000);
-	int nCols = 2;
-	int nRows = std::ceil((2 + m.hVecTotVsTDiff.size()) * 1. / nCols);
-	can->Divide(nRows, nCols);
+	can->Divide(1, 3);
 
 	// Draw all ToT spectra and the corresponding Gaussian fits for the cosmic-muon lines
 	// in the same TPad.
 	// -> one spectrum and one fit for each voltage
+	TLegend lgd = createLegend(m.hVecTot[0]);
+
 	can->cd(1);
-	m.hVecTot[0].GetYaxis()->SetRangeUser(0., 1.1 * findMaximum(m.hVecTot));
-	m.hVecTot[0].DrawClone("hist");
+	gPad->Divide(m.hVecTot.size(), 1);
+
 	for(int i = 0; i < m.hVecTot.size(); i++){
-		m.hVecTot[i].DrawClone("same hist");
-		m.fits[i].DrawClone("same");
+		can->cd(1);
+		gPad->cd(i+1);
+		setColors(m.hVecTot[i]);
+		setColorsPtr(m.fits[i]);
+		setDashedLinePtr(m.fits[i]);
+		// iterate over voltages
+		for(int iVoltage = 0; iVoltage < m.hVecTot[i].size(); iVoltage++){
+			m.hVecTot[i][iVoltage].GetYaxis()->SetRangeUser(0., 1.1 * findMaximum(m.hVecTot[i]));
+			if(iVoltage == 0){
+				m.hVecTot[i][iVoltage].DrawClone("hist");
+			}
+			else{
+				m.hVecTot[i][iVoltage].DrawClone("same hist");
+			}
+			m.fits[i][iVoltage]->Draw("same");
+		}
+		lgd.DrawClone();
 	}
-	TLegend lgd = createLegend(m.hVecTot);
-	lgd.DrawClone();
 
 	// Result of the gain-matching procedure:
 	// Voltage vs. ToT of the cosmic-muon line.
 	// -> TGraph (one data point for each measurement) and TF1 (fit)
 	can->cd(2);
-	m.gainGraph.SetMarkerStyle(3);
-	m.gainGraph.GetXaxis()->SetLimits(0., 50.);
-	m.gainGraph.GetXaxis()->SetRangeUser(0., 50.);
-	m.gainGraph.DrawClone("ap");
-	m.gainFit.DrawClone("same");
+	gPad->Divide(m.gainGraphs.size(), 1);
+
+	setColorsPtr(m.gainFits);
+	setDashedLinePtr(m.gainFits);
+
+	for(int i = 0; i < m.gainGraphs.size(); i++){
+		can->cd(2);
+		gPad->cd(i+1);
+		m.gainGraphs[i].SetMarkerStyle(3);
+		m.gainGraphs[i].GetXaxis()->SetLimits(0., 50.);
+		m.gainGraphs[i].GetXaxis()->SetRangeUser(0., 50.);
+		m.gainGraphs[i].DrawClone("ap");
+		m.gainFits[i]->Draw("same");
+	}
 
 	// 2D correlation plots: ToT vs. tDiff
+	// iterate over voltages
+	can->cd(3);
+	gPad->Divide(m.hVecTotVsTDiff.size(), 1);
+
 	for(int i = 0; i < m.hVecTotVsTDiff.size(); i++){
-		can->cd(i+3);
+		can->cd(3);
+		gPad->cd(i+1);
 		m.hVecTotVsTDiff[i].DrawClone("colz");
 	}
 

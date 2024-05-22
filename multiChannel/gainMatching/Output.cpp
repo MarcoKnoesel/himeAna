@@ -42,17 +42,20 @@ TFile* Output::create(TString outputSubdir, const std::vector<Module>& modules){
 	ofstream ofs(path, std::ofstream::out);
 	
 	// at first, write a comment that says what data is listed in this file
-	ofs << "# module ID, voltage (V)\n";
+	ofs << "# HIME channel, voltage (V)\n";
 	
 	for(const Module& m: modules){
 
 		// skip modules that have no counts
 		if(!m.gotHits()) continue;
 
-		// skip modules where the voltage could not be calculated properly
-		if(!m.getTargetVoltage()) continue;
-		
-		ofs << Convert::toStr(m.getID()) << "," << Convert::toStr((int) std::lround(m.getTargetVoltage())) << "\n";
+		for(int pmt = 0; pmt < 2; pmt++){
+
+			// skip modules where the voltage could not be calculated properly
+			if(!m.getTargetVoltages()[pmt]) continue;
+			
+			ofs << Convert::toStr(m.getChannels()[pmt]) << "," << Convert::toStr((int) std::lround(m.getTargetVoltages()[pmt])) << "\n";
+		}
 	}
 
 	// create a ROOT file for histograms

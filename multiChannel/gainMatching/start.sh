@@ -22,8 +22,15 @@
 
 # ---------- settings ----------
 
+# Set here the name of the directory where the output 
+# of the gain matching procedure will be written
+outputSubdir=2024-05-07
+
 # provide that directory names of all measurements with different voltages
 subdirs=(2024-04-11 2024-03-22 2024-03-18 2024-03-19) 
+
+# this is required to tell the program which channels belong to each module
+channelMapping=2024-03-17.csv
 
 # list here the corresponding voltages in the right order
 voltages=(1000 1100 1200 1300)
@@ -35,10 +42,6 @@ desiredToT=20
 # set this to true in order to fit a linear model to the (ToT, voltage) data points
 # or to false for a quadratic model
 linearGainFitModel=true
-
-# Set here the name of the directory where the output 
-# of the gain matching procedure will be written
-outputSubdir=2024-05-07
 # ------------------------------
 
 source ../../common/common.sh
@@ -52,7 +55,7 @@ if [ $? -eq 0 ]; then
 	vector_of_all_subdirs="{"
 	vector_of_all_voltages="{"
 	for subdir in "${subdirs[@]}"; do
-		get_all_files unpacked "$subdir"
+		get_all_files tDiff "$subdir"
 		echo "$subdir"
 		echo "$ALL_FILES"
 		files_of_all_subdirs="$files_of_all_subdirs""$ALL_FILES",
@@ -72,7 +75,7 @@ if [ $? -eq 0 ]; then
 	create_directory gainMatching "$outputSubdir"
 
 	# start 
-	$ROOT_CALL "gainMatching(\"${HIME_ANA_DIRECTORY}\",${vector_of_all_voltages},${vector_of_all_subdirs},${files_of_all_subdirs},${desiredToT},${linearGainFitModel},\"${outputSubdir}\")"
+	$ROOT_CALL "gainMatching(\"${HIME_ANA_DIRECTORY}\",${vector_of_all_voltages},${vector_of_all_subdirs},${files_of_all_subdirs},${desiredToT},${linearGainFitModel},\"${outputSubdir}\",\"${channelMapping}\")"
 	
 	wait
 	echo -e "\nstart.sh done."

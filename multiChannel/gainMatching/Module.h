@@ -23,6 +23,7 @@
 #define Module_h
 
 #include <vector>
+#include <array>
 #include "TH2F.h"
 #include "TF1.h"
 #include "TGraphErrors.h"
@@ -33,36 +34,43 @@ class Module{
 
 	Module();
 	// parameters: module ID and voltages of the measurements
-	Module(int id, std::vector<float> voltages, bool linearGainFitModel);
+	Module(int id, int chLeft, int chRight, std::vector<float> voltages, bool linearGainFitModel);
 	
 	// 2D correlation plot: ToT vs. tDiff
 	std::vector<TH2F> hVecTotVsTDiff;
-	// ToT spectrum (projection of Module::hVecTotVsTDiff)
-	std::vector<TH1F> hVecTot;
+	// indices 0 and 1: ToT spectra of the individual PMTs of this module
+	// index 2:         ToT spectrum (projection of Module::hVecTotVsTDiff)
+	std::array<std::vector<TH1F>,3> hVecTot; 
 	// voltages of the measurements
 	std::vector<float> voltages;
 	// Gaussian fits for the cosmic-muon peaks
-	std::vector<TF1> fits;
+	std::array<std::vector<TF1*>,3> fits;
+	// the channels this module is connected to
+	std::array<int,2> channels;
 
 	// Result of the gain-matching procedure:
 	// voltage vs. ToT of the cosmic-muon line
-	// (one data point for each measurement)
-	TGraphErrors gainGraph;
-	// Fit for Module::gainGraph
-	TF1 gainFit;
+	// (two TGraphErrors instance for the two PMTs, 
+	// another one for the module (-> combined ToT);
+	// one data point for each voltage)
+	std::array<TGraphErrors,3> gainGraphs;
+	// Fits for Module::gainGraphs
+	std::array<TF1*,3> gainFits;
 	
 	// normalize the ToT spectra; require integral == 1
 	void normalizeToT();
 	// fill the histograms with data from the tDiff part of himeAna
-	void fill(int iVoltage, const TH2F* histogramFromFile);
+	void fill(int iVoltage, const TH2F* histogramFromFile, const std::array<TH1F*,2>& pmtHistogramFromFile);
 	// get the ID of this module
 	int getID() const { return id; }
+	// get the channels which this module is connected to
+	std::array<int,2> getChannels() const { return channels; }
 	// get the target voltage for this module (result of the gain-matching procedure)
-	float getTargetVoltage() const { return targetVoltage; }
+	std::array<float,2> getTargetVoltages() const { return targetVoltages; }
+	// set the target voltage for this module (result of the gain-matching procedure)
+	void setTargetVoltages(std::array<float,2> targetVoltages) { this->targetVoltages = targetVoltages; }
 	// add a point to the TGraph containing (ToT, voltage) data points
-	void addPoint(int iVoltage, const std::array<double,2>& peakPositionAndUncertainty);
-	// fit Module::gainGraph to get a continuous mapping from ToT values onto voltages
-	void fitGainGraph(float desiredToT);
+	void addPoint(int iVoltage, const std::array<std::array<double,2>,3>& peakPositionsAndUncertainties);
 	// returns true if any of the ToT spectra of this module has a count and false otherwise
 	bool gotHits() const;
 
@@ -71,7 +79,7 @@ class Module{
 	// ID of this module
 	int id;
 	// result of the gain-matching procedure
-	float targetVoltage;
+	std::array<float,2> targetVoltages;
 	// find the largest number in a vector
 	float findLargestEntry(const std::vector<float>& v) const;
 	// find the smallest number in a vector
@@ -79,7 +87,12 @@ class Module{
 	// copy all bin contents from one TH2F to another 
 	void copy(const TH2F* hSource, TH2F& hTarget) const;
 	// copy all bin contents from a TH1D to a TH1F
-	void copy(const TH1D* hSource, TH1F& hTarget) const;
+	template <typename T>
+	void copy(const T* hSource, TH1F& hTarget) const {
+		for(int binX= 1; binX <= hSource->GetXaxis()->GetNbins(); binX++){
+			hTarget.SetBinContent(binX, hSource->GetBinContent(binX));
+		}
+	};
 };
 
 #endif

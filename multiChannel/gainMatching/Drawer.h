@@ -90,11 +90,25 @@ class Drawer{
 			h.GetYaxis()->SetRangeUser(lowerLimit, upperLimit);
 		}
 	}
+	// set a different line color for each TH1F*/TGraph*/...
+	template <typename T>
+	void setColorsPtr(T& drawables){
+		for(int i = 0; i < drawables.size(); i++){	
+			drawables[i]->SetLineColor(colors[i%colors.size()]);
+		}
+	}
 	// set a different line color for each TH1F/TGraph/...
 	template <typename T>
 	void setColors(T& drawables){
 		for(int i = 0; i < drawables.size(); i++){	
 			drawables[i].SetLineColor(colors[i%colors.size()]);
+		}
+	}
+	// set the same line style for each TH1F*/TGraph*/...
+	template <typename T>
+	void setDashedLinePtr(T& drawables){
+		for(int i = 0; i < drawables.size(); i++){	
+			drawables[i]->SetLineStyle(9);
 		}
 	}
 	// set the same line style for each TH1F/TGraph/...

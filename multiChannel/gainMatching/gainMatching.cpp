@@ -22,16 +22,12 @@
 #include "gainMatching.h"
 #include "ProgressIndicator.h"
 #include "TDiffData.h"
-#include "Module.h"
-#include "TCanvas.h"
-#include "TMath.h"
-#include "TFile.h"
+#include "GainAna.h"
 #include "Output.h"
 #include "SpectrumAna.h"
-#include "Constants.h"
-#include "Convert.h"
 #include "HistogramCollection.h"
 #include "Drawer.h"
+#include "CSVReader.h"
 #include <string>
 #include <iostream>
 using std::vector;
@@ -41,7 +37,16 @@ using std::endl;
 
 
 
-void gainMatching(const char* trb3dir, std::vector<float> voltages, std::vector<const char*> subdirs, std::vector<std::vector<const char*>> allFiles, float desiredToT, bool linearGainFitModel, const char* outputSubdir){
+void gainMatching(
+	const char* trb3dir, 
+	std::vector<float> voltages, 
+	std::vector<const char*> subdirs, 
+	std::vector<std::vector<const char*>> allFiles, 
+	float desiredToT, 
+	bool linearGainFitModel, 
+	const char* outputSubdir, 
+	const char* channelMappingFilename
+){
 
 	// Check if the number of given voltages matches the number of subdirectories
 	if(voltages.size() != subdirs.size()){
@@ -58,18 +63,36 @@ void gainMatching(const char* trb3dir, std::vector<float> voltages, std::vector<
 		cout << "[gainMatching] The number of subdirs does not match the size of allFiles!" << endl;
 		return;
 	}
-	
+
 	// The instances of class Module contain (among other data):
 	// - a ToT spectrum for each voltage
 	// - a 2D correlation plot showing ToT vs. tDiff for each voltage
 	// - a TGraph object correlating the position of the cosmic-muon peak with the voltage applied to the module
-	vector<Module> modules(Constants::nModules);
-	// A collection of histograms showing general information about the gain-matching procedure
-	HistogramCollection hc(voltages, modules.size(), desiredToT);
+	vector<Module> modules;
+	// Find which channels each module is connected to.
+	// Create instances of class Module.
+	TString channelMappingDir("../../data/channelMapping/");
+	vector<vector<string>> channelMapping = CSVReader::read(channelMappingDir + channelMappingFilename, 7);
+	
+	for(int i = 0; i < channelMapping.size(); i++){
+		
+		int layer = std::stoi(channelMapping[i][3]);
+		int moduleNumberInThisLayer = std::stoi(channelMapping[i][4]);
+		int moduleID = layer * 24 + moduleNumberInThisLayer;
 
-	for(int moduleID = 0; moduleID < Constants::nModules; moduleID++){
-		modules[moduleID] = Module(moduleID, voltages, linearGainFitModel);
+		int fpga = std::stoi(channelMapping[i][6]);
+		int dacChain = std::stoi(channelMapping[i][5]);
+		int channelOffset = fpga * 48 + dacChain * 16;
+		int channelRight = channelOffset + std::stoi(channelMapping[i][1]);
+		int channelLeft  = channelOffset + std::stoi(channelMapping[i][2]);
+	
+		modules.push_back(Module(moduleID, channelLeft, channelRight, voltages, linearGainFitModel));
+
+		cout << "Adding module " << moduleID << ": " << channelLeft << ",  " << channelRight << endl;
 	}
+	
+	// A collection of histograms showing general information about the gain-matching procedure
+	HistogramCollection hc(voltages, desiredToT);
 
 	// iterate over all voltages that have been applied to the modules
 	// in the measurements where the input data for the gain-matching procedure are from
@@ -89,9 +112,9 @@ void gainMatching(const char* trb3dir, std::vector<float> voltages, std::vector<
 				// normalize all ToT spectra so that their integrals are 1
 				m.normalizeToT();
 				// extract the cosmic-muon peak position in the ToT spectrum for each voltage
-				std::array<double,2> peakPositionAndUncertainty = SpectrumAna::fitLastPeak(m, iVoltage);
+				std::array<std::array<double,2>,3> peakPositionsAndUncertainties = SpectrumAna::fitLastPeak(m, iVoltage);
 				// fill a TGraph that correlates the peak position with the voltage
-				m.addPoint(iVoltage, peakPositionAndUncertainty);
+				m.addPoint(iVoltage, peakPositionsAndUncertainties);
 			}
 		}
 	}
@@ -103,7 +126,8 @@ void gainMatching(const char* trb3dir, std::vector<float> voltages, std::vector<
 	// This results in values for the voltage that need to be set for each module.
 	for(Module& m: modules){
 		if(m.gotHits()){
-			m.fitGainGraph(desiredToT);
+			GainAna::removeDeviatingPoints(m);
+			GainAna::fit(m, desiredToT);
 		}
 	}
 
@@ -121,9 +145,10 @@ void gainMatching(const char* trb3dir, std::vector<float> voltages, std::vector<
 	// Show histograms and write TCanvas objects to a file
 	Drawer dr(voltages);
 	dr.drawOverview(hc);
-	for(int i = 0; i < modules.size(); i++){
-		if(modules[i].hVecTot[0].GetEntries()){
-			dr.drawModule(modules[i], true);
+	for(Module& m: modules){
+		if(m.gotHits()){
+			cout << "module " << m.getID() << endl;
+			dr.drawModule(m, true);
 		}
 	}
 }

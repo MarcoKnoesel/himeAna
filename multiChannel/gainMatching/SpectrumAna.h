@@ -31,7 +31,7 @@ namespace SpectrumAna{
 	// helper for SpectrumAna::findLastPeak
 	bool threePreceedingBinsHaveSmallerContent(const TH1F& h, int currentBin);
 	// apply a Gaussian fit to the cosmic-muon peak in the ToT spectrum
-	std::array<double,2> fitLastPeak(Module& m, int iVoltage);
+	std::array<std::array<double,2>,3> fitLastPeak(Module& m, int iVoltage);
 };
 
 #endif
