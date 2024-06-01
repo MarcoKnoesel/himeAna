@@ -38,8 +38,7 @@ class TRB3RawData{
 	TRB3RawData(TString path);
 	int getTrigger() const;
 	int getNEvents() const;
-	void getEvent(long i);
-	std::vector<hadaq::MessageFloat> getMessagesOfTdc(int iTdc) const;
+	std::vector<std::vector<hadaq::MessageFloat*>> getMessagesSortedByChannel(int eventNumber);
 
 	private:
 	TFile *fFile;

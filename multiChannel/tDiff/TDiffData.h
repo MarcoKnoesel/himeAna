@@ -29,8 +29,6 @@
 #include <vector>
 #include "TFile.h"
 #include "TTree.h"
-#include "TString.h"
-#include "HistogramCollection.h"
 
 class TDiffData{
 	public:
@@ -39,7 +37,8 @@ class TDiffData{
 	void fill();
 	void write();
 	void cdToFile();
-	void initVectors(int size = 0);
+	void reset(int size = 0);
+	inline TFile* getFile(){ return file; }
 
 	// *** The following data is written to the TTree ***
 	std::vector<float> tDiff;				// Time difference between the rising signals of PMT 0 and 1

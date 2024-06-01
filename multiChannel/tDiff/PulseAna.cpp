@@ -20,108 +20,38 @@
 */
 
 #include "PulseAna.h"
-
-#include "Constants.h"
-
+using std::array;
 using std::vector;
 using MF = hadaq::MessageFloat;
 
-
-
-void PulseAna::findPulses(const TRB3RawData &input, Detector &d){
-
-	d.clearPulses();
-
-	for(int iTdc = 0; iTdc < Constants::nTdcs; iTdc++){
+bool PulseAna::findPulse(vector<MF*>& messages, array<float,2>& timeStamps){
+	if(messages.size() < 2) return false;
 	
-		const vector<MF> &messages = input.getMessagesOfTdc(iTdc);
-		int chOffs = iTdc * Constants::nChPerTdc;
+	// iterate over MF objects that are ordered in time
+	for(int iMsg = 0; iMsg < messages.size() - 1; iMsg++){
+		// look at pairs of subsequent MF objects
+		MF& mf_first = *(messages[iMsg]);
+		MF& mf_second = *(messages[iMsg+1]);
 
-		// iterate over all messages of the current FPGA
-		for(int i = 0; i < (int) messages.size(); i++){
-
-			int ch = ((int) messages[i].getCh()) - 1 + chOffs;
-			
-			try{
-				appendMessageToPulseSequence(messages[i], d.getPMTAtCh(ch).pulses);
-			}
-			catch (const char *message) {
-				appendMessageToPulseSequence(messages[i], d.pulsesFromInactiveChannels);
-			}
+		// if the first MF is rising and the second one falling,
+		// we have a complete pulse
+		// -> return true
+		if(mf_first.isRising() && mf_second.isFalling()){
+			timeStamps = {mf_first.getStamp(), mf_second.getStamp()};
+			return true;
+		}
+		// if there are two rising or two falling edges,
+		// a signal got lost
+		// -> return false, because we don't know what happened exactly
+		if(mf_first.isRising() && mf_second.isRising()){
+			return false;
+		}
+		if(mf_first.isFalling() && mf_second.isFalling()){
+			return false;
 		}
 	}
-}
-
-
-
-void PulseAna::appendMessageToPulseSequence(const MF &m, vector<Pulse> &pulses){
-
-	/*  
-	If ...
-	- we have a MessageFloat representing a falling edge
-	- the latest pulse in the same channel already has a rising edge with an earlier time stamp
-	- but no falling edge
-	then add the stamp of the current MessageFloat object to that pulse.
-	*/ 
-	if(pulses.size()){
-
-		Pulse &mostRecentPulse = pulses.back();
-		
-		if(m.isFalling() && mostRecentPulse.hasRising() && !mostRecentPulse.hasFalling()){
-			mostRecentPulse.setStampFalling(m.stamp);
-			return;
-		}
-	}
-	// Otherwise, create a new pulse and set the pointer 'latestPulses[ch]' to the address of that new pulse.
-	pulses.push_back( Pulse(m) );
-}
-
-
-
-void PulseAna::evaluate(Detector &d, TDiffData &output){
-	
-	// IDs of modules that registered a hit in the current event
-	vector<int> m;
-
-	for(int iMod = 0; iMod < d.modules.size(); iMod++){
-
-		if(moduleRegisteredHit(d.modules[iMod])) m.push_back(iMod);
-	}
-
-	// inform "TDiffData ouput" about the number of hits in the current event
-	output.initVectors(m.size());
-	output.nHits = m.size();
-
-	// loop over modules that fired in the current event
-	for(int iHit = 0; iHit < m.size(); iHit++){
-
-		const vector<Pulse> &pulses_left_up = d.modules[m[iHit]].pmt_left_up().pulses;
-		const vector<Pulse> &pulses_right_down = d.modules[m[iHit]].pmt_right_down().pulses;
-
-		// fill "TDiffData &output", which contains a TTree object
-		output.tDiff[iHit] = pulses_right_down[0].getStampRising() - pulses_left_up[0].getStampRising();
-		output.tSum[iHit] = pulses_right_down[0].getStampRising() + pulses_left_up[0].getStampRising();
-		output.tot0[iHit] = pulses_left_up[0].getTot();
-		output.tot1[iHit] = pulses_right_down[0].getTot();
-		output.moduleID[iHit] = m[iHit];
-
-		// fill histograms showing ToT vs. time difference
-		d.modules[m[iHit]].fill(output.tDiff[iHit], std::sqrt(output.tot0[iHit] * output.tot1[iHit]));
-	}
-}
-
-
-
-// *** here it is defined what it means that a certain module registered a hit ***
-bool PulseAna::moduleRegisteredHit(const Module &m){
-
-	const vector<Pulse> &pulses_left_up = m.pmt_left_up().pulses;
-	const vector<Pulse> &pulses_right_down = m.pmt_right_down().pulses;
-
-	if( !pulses_left_up.size() ) return false;
-	if( !pulses_right_down.size() ) return false;
-	if( !pulses_left_up[0].isComplete() ) return false;
-	if( !pulses_right_down[0].isComplete() ) return false;
-
-	return true;
+	// there might be just one signal that was detected successfully
+	// -> in this case, a signal got lost and we cannot calculate the ToT
+	// -> return false
+	return false;
 }

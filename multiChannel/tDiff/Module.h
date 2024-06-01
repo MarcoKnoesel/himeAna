@@ -19,31 +19,31 @@
 	along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-/*
- * This class represents a module composed of a scintillator bar and two PMTs.
- * Each PMT is connected to a specific channel.
- */
-
 #ifndef Module_h
 #define Module_h
 
-#include <array>
-#include "PMT.h"
+#include "TH1F.h"
 #include "TH2F.h"
-
+#include "TFile.h"
 
 class Module{
+	
 	public:
-	Module(){}
+	Module();
 	Module(int id, int ch_left_up, int ch_right_down);
-	std::array<PMT,2> pmts;
-	inline PMT pmt_left_up() const { return pmts[0]; }
-	inline PMT pmt_right_down() const { return pmts[1]; }
-	inline void fill(float tDiff, float tot) { hTotVsTDiff.Fill(tDiff, tot); }
-	void writeIfFilled();
+	inline int getChLeftUp() const { return ch_left_up; }
+	inline int getChRightDown() const { return ch_right_down; }
+	inline int getID() const { return id; }
+	void fillHistograms(float tDiff, float tot_left_up, float tot_right_down);
+	void write(TFile* f) const;
+	TH2F hTotVsTDiff;
+	TH1F hTot_left_up;
+	TH1F hTot_right_down;
 
 	private:
-	TH2F hTotVsTDiff;
+	int id;
+	int ch_left_up;
+	int ch_right_down;
 };
 
 #endif

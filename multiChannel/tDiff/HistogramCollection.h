@@ -24,21 +24,27 @@
 
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TFile.h"
+#include "TdcSubEvent.h"
 
 class HistogramCollection{
 
 	public:
-	HistogramCollection(){};
-	HistogramCollection(int nEvents);
-	void write();
+	HistogramCollection();
+	HistogramCollection(const std::vector<int>& activeChannels, int nEvents);
+	void fill(const std::vector<std::vector<hadaq::MessageFloat*>>& messagesSortedByChannel, int trigger, int eventCounter);
+	void write(TFile* f);
 
-	TH1F *hChannels;
-	TH1F *hTimeStamps;
-	TH1F *hTrigger;
-	TH2F* hChVsStampRising;
-	TH2F* hChVsStampFalling;
-	TH2F* hChVsEvtNr;
-	TH1F *hNMessages;
+	TH1F hChannels;
+	TH1F hTimeStamps;
+	TH1F hTrigger;
+	TH2F hChVsEvtNr;
+	TH1F hNMessages;
+	TH2F hChCorr;
+
+	private:
+	std::vector<int> fActiveChannels;
+	float fInvNEvents;
 };
 
 #endif

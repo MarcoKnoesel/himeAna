@@ -19,43 +19,20 @@
 	along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-/*
- * Create and analyze objects of type Pulse
- */
 #ifndef PulseAna_h
 #define PulseAna_h
 
-#include <vector>
-
-#include "Detector.h"
-#include "TRB3RawData.h"
-#include "Pulse.h"
-#include "TDiffData.h"
+#include "TdcSubEvent.h"
+#include <array>
 
 namespace PulseAna{
-
 	/*
-		Search for leading and trailing edges among the 'MessageFloat' instances 'messages'
-		and group them to instances of type 'Pulse'
+		Find a rising edge that is followed by a falling edge and save the respective
+		time stamps in a std::array.
+		Return true if such a sequence of messages is found;
+		return false otherwise.
 	*/
-	void findPulses(const TRB3RawData &input, Detector &d);
-
-	/*
-		Append the information from a MessageFloat object to a sequence of pulses of a certain channel
-		Helper for the function above.
-	*/
-	void appendMessageToPulseSequence(const hadaq::MessageFloat &m, std::vector<Pulse> &pulses);
-
-	/*
-		Calculate tDiff for all modules and ToT for all PMTs.
-	*/
-	void evaluate(Detector &d, TDiffData &output);
-
-	/*
-		Check if a certain module registered a hit
-	*/
-	bool moduleRegisteredHit(const Module &m);
+	bool findPulse(std::vector<hadaq::MessageFloat*>& messages, std::array<float,2>& timeStamps);
 };
-
 
 #endif

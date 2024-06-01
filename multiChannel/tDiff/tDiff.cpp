@@ -30,17 +30,17 @@
 #include <iostream>
 
 #include "ProgressIndicator.h"
-#include "Drawer.h"
-#include "PulseAna.h"
 #include "TRB3RawData.h"
-#include "MessageAna.h"
-#include "Constants.h"
-#include "Helpers.h"
-#include "TStopwatch.h"
-#include "Convert.h"
+#include "HistogramCollection.h"
+#include "TdcSubEvent.h"
+#include "TDiffData.h"
+#include "Detector.h"
+#include "Module.h"
+#include "PulseAna.h"
 
 using std::cout;
 using std::endl;
+using std::array;
 using std::vector;
 using MF = hadaq::MessageFloat;
 
@@ -59,75 +59,85 @@ using MF = hadaq::MessageFloat;
 
 void tDiff(const char *trb3dir, const char *dir, const char *filename, int trigger, bool write, bool plot){
 
-	/*
-	 * Set the number of TDCs and the number of channels per TDC in "Constants.h"!
-	 * If set too small, undefined behavior might occur.
-	 */
-
 	// ---------------- Input ----------------
 
-	TRB3RawData input(TString(trb3dir) + "/data/unpacked/" + TString(dir) + "/" + TString(filename));
-	const int nEvents = input.getNEvents();
-	//Detector hime;
-	Detector hime(TString(trb3dir) + "/data/channelMapping/2024-03-17.csv");
+	TString pathInput(TString(trb3dir) + "/data/unpacked/" + TString(dir) + "/" + TString(filename));
+	TRB3RawData input(pathInput);
 
 	// ---------------- Output ----------------
 
-	TDiffData output(TString(trb3dir) + "/data/tDiff/" + TString(dir) + "/" + TString(filename));
+	TString pathOutput(TString(trb3dir) + "/data/tDiff/" + TString(dir) + "/" + TString(filename));
+	TDiffData output(pathOutput);
+
+	// ---------------- Channel mapping ----------------
+
+	// Create a std::vector of Module objects, where each Module has an ID and two channels.
+	// In each channel, there will be sequences of hadaq::MessageFloat objects,
+	// representing the signals of a PMT.
+	vector<Module> modules = Detector::build("../../data/channelMapping/2024-03-17.csv");
+	vector<int> activeChannels = Detector::getActiveChannels(modules);
+	std::sort(activeChannels.begin(), activeChannels.end());
 
 	// ---------------- Loop over events ----------------
 
+	const int nEvents = input.getNEvents();
+	HistogramCollection hc(activeChannels, nEvents);
 	ProgressIndicator pi(nEvents, "[tDiff] Processed events:");
-	HistogramCollection hc(nEvents);
-	TStopwatch stopwatch;
 
-	
 	for(int eventCounter = 0; eventCounter < nEvents; eventCounter++){
 
 		pi.showProgress(eventCounter);
-		hime.clearPulses();
-		input.getEvent(eventCounter);
+		output.reset();
+		vector<vector<MF*>> messagesSortedByChannel = input.getMessagesSortedByChannel(eventCounter);
 
 		// check trigger
 		if(trigger > -1){
 			if( trigger != input.getTrigger() ) continue;
 		}
-		hc.hTrigger->Fill(input.getTrigger());
 
-		// loop over FPGAs
-		int nMessages = 0;
+		hc.fill(messagesSortedByChannel, input.getTrigger(), eventCounter);
 
+		// loop over all modules of the detector
+		for(Module& m: modules){
+			// get all MessageFloat objects of each PMT
+			vector<MF*>& messages_left_up = messagesSortedByChannel[m.getChLeftUp()];
+			vector<MF*>& messages_right_down = messagesSortedByChannel[m.getChRightDown()];
 
-		for(int iTdc = 0; iTdc < Constants::nTdcs; iTdc++){
-		
-			vector<MF> messages = input.getMessagesOfTdc(iTdc);
-			std::sort(messages.begin(), messages.end(), Helpers::isEarlier);
-			nMessages += messages.size();
-			// fill histograms showing information on hadaq::MessageFloat instances
-			MessageAna::fillHistograms(eventCounter, iTdc, messages, hc);
-			// convert hadaq::MessageFloat objects to Pulse objects for each channel
-			PulseAna::findPulses(input, hime);
+			// if a rising signal is found that is followed by a falling signal,
+			// the respective time stamps are written to these arrays
+			array<float,2> timeStamps_left_up;
+			array<float,2> timeStamps_right_down;
+
+			// if both PMTs have a rising signal that is followed by a falling one,
+			// we have a complete hit in the current module,
+			// which has information about position and energy deposition
+			// of the particle that has hit the detector
+			if(PulseAna::findPulse(messages_left_up, timeStamps_left_up) &&	PulseAna::findPulse(messages_right_down, timeStamps_right_down)){
+				// time difference of the two rising edges
+				float tDiff = timeStamps_right_down[0] - timeStamps_left_up[0];
+				output.tDiff.push_back(tDiff);
+				// sum of the time stamps of the two rising edges
+				output.tSum.push_back(timeStamps_right_down[0] + timeStamps_left_up[0]);
+				// ToT of the PMT on the left/top side
+				float tot_left_up = timeStamps_left_up[1] - timeStamps_left_up[0];
+				output.tot0.push_back(tot_left_up);
+				// ToT of the PMT on the right/bottom side
+				float tot_right_down = timeStamps_right_down[1] - timeStamps_right_down[0];
+				output.tot1.push_back(tot_right_down);
+				// ID of the module that was hit
+				output.moduleID.push_back(m.getID());
+				// count the number of hits in this event
+				output.nHits++;
+				// fill histograms that are required for the further analysis,
+				// such as position calibration and gain matching
+				m.fillHistograms(tDiff, tot_left_up, tot_right_down);
+			}
 		}
-		// analyze pulses and write the results to the TTree inside "TDiffData output"
-		// and to the ToT-vs.-tDiff histograms of all HIME modules
-		PulseAna::evaluate(hime, output);
 
-		hc.hNMessages->Fill(nMessages);
 		output.fill();
 	}
-
-	cout << "[tDiff] Time elapsed:  " << Convert::toStr(stopwatch.RealTime()).Data() << " s" << endl;
-
-	// ---------------- Write data and plot histograms ----------------
-
-	if(write){
-		output.write();	// do this at first, because it does "cd" to the output file
-		hime.write();
-		hc.write();
-	}
-	if(plot){
-		Drawer dr;
-		dr.draw1d(hc);
-		dr.draw2d(hc);
-	}
+	
+	output.write();
+	hc.write(output.getFile());
+	for(const Module& m: modules) m.write(output.getFile());
 }

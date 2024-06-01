@@ -23,4 +23,6 @@
 	std::cout << "Loading rootlogon.C..." << std::endl;
 	gROOT->ProcessLine(".L tDiff.h");
 	gROOT->ProcessLine(".L libTDiff.so");
+	gROOT->ProcessLine(".L ../../common/lib/libCommon.so");
+	gROOT->ProcessLine(".L ../../common/lib/libStream.so");
 }

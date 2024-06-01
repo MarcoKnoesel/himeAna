@@ -21,7 +21,7 @@
 #!/bin/bash
 
 # ---------- settings ----------
-subdir=2022-11-30b
+subdirs=(2024-04-11 2024-03-22 2024-03-18 2024-03-19)
 trigger=-1
 # ------------------------------
 
@@ -30,19 +30,19 @@ source ../../common/common.sh
 make
 
 if [ $? -eq 0 ]; then
+	for subdir in "${subdirs[@]}"; do
+		create_directory tDiff "$subdir"
 
-	create_directory tDiff "$subdir"
+		fileCounter=0
 
-	fileCounter=0
-
-	# loop over all files
-	for filename in "$HIME_ANA_DIRECTORY"/data/unpacked/"$subdir"/*.root; do
-		check_threads "$fileCounter"
-		filenameBase=$(basename "$filename")
-		$ROOT_CALL "tDiff(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",\"${filenameBase}\",${trigger},true,false)" > /dev/null &
-		fileCounter=`expr ${fileCounter} + 1`
+		# loop over all files
+		for filename in "$HIME_ANA_DIRECTORY"/data/unpacked/"$subdir"/*.root; do
+			check_threads "$fileCounter"
+			filenameBase=$(basename "$filename")
+			$ROOT_CALL "tDiff(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",\"${filenameBase}\",${trigger},true,false)" > /dev/null &
+			fileCounter=`expr ${fileCounter} + 1`
+		done
 	done
-
 	wait
 
 	echo -e "\nloop.sh done."

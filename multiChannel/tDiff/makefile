@@ -29,20 +29,3 @@ $(target): $(sources) $(headers)
 
 clean:
 	rm -f $(target)
-
-
-
-
-#headers := $(filter-out Hadaq.h, $(wildcard *.h))
-#sources := $(filter-out Hadaq.cpp, $(wildcard *.cpp))
-#
-#.PHONY: clean
-#
-#libTRB3Ana.so: $(sources) Hadaq.cpp $(headers)
-#	g++ -shared -fPIC -O2 -o $@ $(sources) Hadaq.cpp $(shell root-config --cflags --libs) -I. -I../../common/ -L/home/mknoesel/himeAna/common -lCommon 
-#
-#Hadaq.cpp: Hadaq.h LinkDef.h
-#	rootcint -f $@ $^
-#
-#clean:
-#	rm -f libTRB3Ana.so Hadaq_rdict.pcm Hadaq.cpp

@@ -21,8 +21,8 @@
 #!/bin/bash
 
 # ---------- settings ----------
-subdir=2022-11-30b
-filename=HIME_wall0_0000.root
+subdir=2024-05-27
+filename=voltages2024-05-24_thr0x200_0000.root
 trigger=-1
 plot=true
 write=true

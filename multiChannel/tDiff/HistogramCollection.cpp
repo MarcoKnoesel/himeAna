@@ -25,41 +25,72 @@
 #include "Constants.h"
 #include "TFile.h"
 
-using std::cout;
-using std::endl;
+using std::vector;
+using MF = hadaq::MessageFloat;
 
-HistogramCollection::HistogramCollection(int nEvents){
+HistogramCollection::HistogramCollection(const vector<int>& activeChannels, int nEvents){
 
-	const int nCh = Constants::nChPerTdc * Constants::nTdcs;
+	this->fActiveChannels = activeChannels;
+	fInvNEvents = 1. / nEvents;
+	const int nCh = Constants::nChTot;
 
-	hChannels 			= new TH1F("hChannels", "TDC channels", nCh, 0, nCh);
-	hTimeStamps			= new TH1F("hTimeStamps", "Time stamps", 600, -300, 300);
-	hTrigger  			= new TH1F("hTrigger", "Trigger signals", 10, 0, 10);
-	hChVsStampRising	= new TH2F("hChVsStampRising", "Rising signals", 200, -100, 100, nCh, 0, nCh);
-	hChVsStampFalling	= new TH2F("hChVsStampFalling", "Falling signals", 200, -100, 100, nCh, 0, nCh);
-	hChVsEvtNr 			= new TH2F("hChVsEvtNr", "Number of messages from each channel in dependence on event number", 100, 0, nEvents, nCh, 0, nCh);
-	hNMessages 			= new TH1F("hNMessages", "Number of messages per event", 50, 0, 50);
-	hChannels->GetXaxis()->SetTitle("Channel number");
-	hTimeStamps->GetXaxis()->SetTitle("Time (ns)");
-	hTrigger->GetXaxis()->SetTitle("Tigger (TrbNet Type)");
-	hChVsStampRising->GetXaxis()->SetTitle("Time (ns)");
-	hChVsStampRising->GetYaxis()->SetTitle("Channel number");
-	hChVsStampFalling->GetXaxis()->SetTitle("Time (ns)");
-	hChVsStampFalling->GetYaxis()->SetTitle("Channel number");
-	hChVsEvtNr->GetXaxis()->SetTitle("Event number");
-	hChVsEvtNr->GetYaxis()->SetTitle("Channel number");
-	hNMessages->GetXaxis()->SetTitle("Number of messages");
+	hChannels   = TH1F("hChannels", "TDC channels", nCh, 0, nCh);
+	hTimeStamps = TH1F("hTimeStamps", "Time stamps", 600, -300, 300);
+	hTrigger    = TH1F("hTrigger", "Trigger signals", 10, 0, 10);
+	hChVsEvtNr  = TH2F("hChVsEvtNr", "Number of messages from each channel in dependence on event number", 100, 0, 100, nCh, 0, nCh);
+	hNMessages  = TH1F("hNMessages", "Number of messages per event", 50, 0, 50);
+	hChCorr     = TH2F("hChCorr", "Number of hits in each pair of channels", Constants::nChTot, 0, Constants::nChTot, Constants::nChTot, 0, Constants::nChTot);
+	hChannels.GetXaxis()->SetTitle("Channel number");
+	hTimeStamps.GetXaxis()->SetTitle("Time (ns)");
+	hTrigger.GetXaxis()->SetTitle("Tigger (TrbNet Type)");
+	hChVsEvtNr.GetXaxis()->SetTitle("Event number (%)");
+	hChVsEvtNr.GetYaxis()->SetTitle("Channel number");
+	hNMessages.GetXaxis()->SetTitle("Number of messages");
+	hChCorr.GetXaxis()->SetTitle("Channel number");
+	hChCorr.GetYaxis()->SetTitle("Channel number");
 }
 
 
 
-void HistogramCollection::write(){
+void HistogramCollection::fill(const vector<vector<MF*>>& messagesSortedByChannel, int trigger, int eventCounter){
+	// fill histograms showing general information about the hadaq::MessageFloat objects
+	// that were recorded in this run
+	int nMessages = 0;
+	for(int ch: fActiveChannels){
+		const vector<MF*>& messages = messagesSortedByChannel[ch];
+		nMessages += messages.size();
+		hChannels.Fill(ch, messages.size());
+		hChVsEvtNr.Fill(100. * eventCounter * fInvNEvents, ch, messages.size());
+		for(const MF* mf: messages){
+			hTimeStamps.Fill(mf->getStamp());
+		}
+	}
+	hNMessages.Fill(nMessages);
+	hTrigger.Fill(trigger);
 
-	hChannels->Write();
-	hTimeStamps->Write();
-	hTrigger->Write();
-	hChVsStampRising->Write();
-	hChVsStampFalling->Write();
-	hChVsEvtNr->Write();
-	hNMessages->Write();
+	// iterate over all pairs of active channels
+	for(int i = 0; i < fActiveChannels.size(); i++){
+		for(int j = i; j < fActiveChannels.size(); j++){
+			int ch0 = fActiveChannels[i];
+			int ch1 = fActiveChannels[j];
+			// fill the histogram, if there was at least one hit in both channels
+			if(messagesSortedByChannel[ch0].size() > 0 && messagesSortedByChannel[ch1].size() > 0){
+				hChCorr.Fill(ch0, ch1);
+			}
+		}
+	}
+}
+
+
+
+
+void HistogramCollection::write(TFile* f){
+
+	f->cd();
+	hChannels.Write();
+	hTimeStamps.Write();
+	hTrigger.Write();
+	hChVsEvtNr.Write();
+	hNMessages.Write();
+	hChCorr.Write();
 }

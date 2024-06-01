@@ -21,14 +21,47 @@
 
 #include "Module.h"
 #include "Convert.h"
+#include "TMath.h"
 
-Module::Module(int id, int ch_left_up, int ch_right_down){
-	pmts = {PMT(ch_left_up), PMT(ch_right_down)};
-	hTotVsTDiff = TH2F("hTotVsTDiff_module_" + Convert::toNdigit(id, 3), "ToT vs. tDiff for Module " + Convert::toStr(id), 320, -40, 40, 100, 0, 50);
+
+
+Module::Module(){
+	id = -1;
+	ch_left_up = -1;
+	ch_right_down = -1;
 }
 
-void Module::writeIfFilled(){
-	if(hTotVsTDiff.GetEntries()){
-		hTotVsTDiff.Write();
-	}
+
+
+Module::Module(int id, int ch_left_up, int ch_right_down){
+	this->ch_left_up = ch_left_up;
+	this->ch_right_down = ch_right_down;
+	this->id = id;
+	
+	TString id_str = Convert::toNdigit(id, 3);
+	TString ch_left_up_str = Convert::toNdigit(ch_left_up, 3);
+	TString ch_right_down_str = Convert::toNdigit(ch_right_down, 3);
+	TString channelInfoInParenthesis(" (left/top channel: " + ch_left_up_str + ", right/bottom channel: " + ch_right_down_str + ")");
+	TString moduleInfoInParenthesis(" (module " + id_str + ")");
+
+	hTotVsTDiff = TH2F("hTotVsTDiff_module_" + id_str, "ToT vs. tDiff for module " + id_str + channelInfoInParenthesis, 320, -40, 40, 100, 0, 50);
+	hTot_left_up = TH1F("hTot_ch_" + ch_left_up_str, "ToT for channel " + ch_left_up_str + moduleInfoInParenthesis, 100, 0, 50);
+	hTot_right_down = TH1F("hTot_ch_" + ch_right_down_str, "ToT for channel " + ch_right_down_str + moduleInfoInParenthesis, 100, 0, 50);
+}
+
+
+
+void Module::fillHistograms(float tDiff, float tot_left_up, float tot_right_down){
+	hTotVsTDiff.Fill(tDiff, TMath::Sqrt(tot_left_up * tot_right_down));
+	hTot_left_up.Fill(tot_left_up);
+	hTot_right_down.Fill(tot_right_down);
+}
+
+
+
+void Module::write(TFile* f) const {
+	f->cd();
+	hTotVsTDiff.Write();
+	hTot_left_up.Write();
+	hTot_right_down.Write();
 }

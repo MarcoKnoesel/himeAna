@@ -60,16 +60,11 @@ void TDiffData::write(){
 
 
 
-void TDiffData::cdToFile(){
-	file->cd();
-}
-
-
-
-void TDiffData::initVectors(int size){
-	tDiff		= vector<float>(size);
-	tSum		= vector<float>(size);
-	tot0		= vector<float>(size);
-	tot1		= vector<float>(size);
-	moduleID	= vector<int>(size);
+void TDiffData::reset(int size){
+	tDiff    = vector<float>(size);
+	tSum     = vector<float>(size);
+	tot0     = vector<float>(size);
+	tot1     = vector<float>(size);
+	moduleID = vector<int>(size);
+	nHits    = 0;
 }

@@ -22,7 +22,6 @@
 #ifndef Constants_h
 #define Constants_h
 
-#include "Helpers.h"
 
 namespace Constants{
 	// number of peripheral TDCs

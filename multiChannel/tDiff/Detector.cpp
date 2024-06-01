@@ -20,53 +20,15 @@
 */
 
 #include "Detector.h"
-#include "CSVReader.h"
 #include "Constants.h"
-
-using std::vector;
+#include "CSVReader.h"
 using std::string;
+using std::vector;
 
+vector<Module> Detector::build(const char* path){
 
-
-Detector::Detector(){
-	modules = vector<Module>(Constants::nModules);
-	reverseSearchChannelToModule = vector<int>(2 * modules.size(), -1);
-
-	//
-	// *** Here, the individual channels/PMTs are assigned to modules ***
-	//
-	// Don't forget to call the right constructor in trb3Ana.cpp!
-	// The constructor of this class is overloaded (see below for more constructors)!
-	//
-
-	/*for(int i = 0; i < modules.size(); i++){
-		addModule(i, 2 * i, 2 * i + 1);
-	}*/
-	
-	addModule(0, 0, 8);
-	addModule(1, 4, 12);
-	
-	/*addModule(2, 4, 5);
-	addModule(3, 1, 7);//addModule(3, 6, 7);
-	addModule(4, 8, 9);
-	addModule(5, 2, 11);//addModule(5, 10, 11);
-	addModule(6, 12, 13);
-	addModule(7, 14, 3);//addModule(7, 14, 15);
-
-	for(int i = 8; i < modules.size(); i++){
-		addModule(i, 2 * i, 2 * i + 1);
-	}
-	*/	
-}
-
-
-
-Detector::Detector(const char* path_to_csv_file){
-
-	modules = vector<Module>(Constants::nModules);
-	reverseSearchChannelToModule = vector<int>(2 * modules.size(), -1);
-
-	vector<vector<string>> csvData = CSVReader::read(path_to_csv_file, 7);
+	vector<Module> modules;
+	vector<vector<string>> csvData = CSVReader::read(path, 7);
 	
 	// combine information and add modules to the detector
 	for(const vector<string> &entries : csvData){
@@ -79,63 +41,32 @@ Detector::Detector(const char* path_to_csv_file){
 		int chain 		= std::stoi(entries[5]);
 		int tdc  		= std::stoi(entries[6]);
 
-		int channelOffset = chain * 16 + tdc * 48 + wall * 100;
+		// determine the HIME-channel number (unique for each PMT)
+		int channelOffset = chain * 16 + tdc * 48 + wall * 1000;
+		int ch_left_up = ch_l_u_raw + channelOffset;
+		int ch_right_down = ch_r_d_raw + channelOffset;
+		// determine the HIME-module ID (unique for each scintillator)
+		int moduleID = layer * 24 + sub_module;
 
-		addModule(
-			layer * 24 + sub_module, 
-			ch_l_u_raw + channelOffset,
-			ch_r_d_raw + channelOffset 
-		);
+		modules.push_back(Module(moduleID, ch_left_up, ch_right_down));
 	}
+
+	return modules;
 }
 
 
 
-void Detector::clearPulses(){
-	
+std::vector<int> Detector::getActiveChannels(const std::vector<Module>& modules){
+	std::vector<int> activeChannels(2 * modules.size());
+
+	// iterate over all modules
 	for(int i = 0; i < modules.size(); i++){
-
-		for(int j = 0; j < 2; j++){
-
-			modules[i].pmts[j].pulses.clear();
-		}
+		const Module& m = modules[i];
+		// save the channel numbers of the right/bottom and the left/top PMT
+		activeChannels[2*i] = m.getChRightDown();
+		activeChannels[2*i+1] = m.getChLeftUp();
 	}
 
-	pulsesFromInactiveChannels.clear();
-}
-
-
-
-void Detector::addModule(int id, int ch0, int ch1){
-	modules[id] = Module(id, ch0, ch1);
-	reverseSearchChannelToModule[ch0] = id;
-	reverseSearchChannelToModule[ch1] = id;
-}
-
-
-
-void Detector::write(){
-	for(Module& m : modules) m.writeIfFilled();
-}
-
-
-
-Module& Detector::getModuleWithID(int id){
-	return modules[id]; 
-}
-
-
-
-Module& Detector::getModuleWithCh(int ch){
-	int id = reverseSearchChannelToModule[ch];
-	if(id < 0) throw "Signal detected in inactive channel";
-	return modules[id]; 
-}
-
-
-
-PMT& Detector::getPMTAtCh(int ch){
-	Module &m = getModuleWithCh(ch);
-	if(m.pmts[0].ch == ch) return m.pmts[0];
-	return m.pmts[1];
+	// return all channel numbers that belong to any of the modules
+	return activeChannels;
 }

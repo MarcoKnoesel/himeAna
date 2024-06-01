@@ -42,7 +42,7 @@ TRB3RawData::TRB3RawData(TString path){
 	fFile = new TFile(path, "read");
 
 	if( ! fFile ){
-		cout << "file not found" << endl;
+		cout << "[TRB3RawData] File not found" << endl;
 		return;
 	}
 
@@ -50,7 +50,7 @@ TRB3RawData::TRB3RawData(TString path){
 	fTree = (TTree*) fFile->Get("T");
 
 	if( ! fTree ){
-		cout << "tree not found" << endl;
+		cout << "[TRB3RawData] Tree not found" << endl;
 		return;
 	}
 
@@ -88,21 +88,30 @@ int TRB3RawData::getTrigger() const {
 
 
 
-void TRB3RawData::getEvent(long i){
-	fTree->GetEvent(i);
-	for(vector<MF> *messages : fTdcs){
-		std::sort(messages->begin(), messages->end(), Helpers::isEarlier);
+std::vector<std::vector<MF*>> TRB3RawData::getMessagesSortedByChannel(int eventNumber){
+	fTree->GetEvent(eventNumber);
+	
+	// sort all MF objects by time
+	for(vector<MF>* messages: fTdcs){
+		std::sort(messages->begin(), messages->end(), [](const MF& left, const MF& right) -> bool { return left.getStamp() < right.getStamp(); });
 	}
+
+	// create a std::vector<MF*> for each channel
+	std::vector<std::vector<MF*>> messagesSortedByChannel(Constants::nChTot);
+
+	for(int iTDC = 0; iTDC < fTdcs.size(); iTDC++){
+		vector<MF>* messages = fTdcs[iTDC];
+		for(MF& m: *messages){
+			int ch = iTDC * Constants::nChPerTdc + (int) m.getCh() - 1;
+			messagesSortedByChannel[ch].push_back(&m);
+		}
+	}
+
+	return messagesSortedByChannel;
 }
 
 
 
 int TRB3RawData::getNEvents() const {
 	return fNEvents;
-}
-
-
-
-vector<MF> TRB3RawData::getMessagesOfTdc(int iTdc) const {
-	return *(fTdcs[iTdc]);
 }
