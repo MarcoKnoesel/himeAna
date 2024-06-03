@@ -9,7 +9,7 @@
 	Planckstr. 1, 64291 Darmstadt, Germany
 	Contact:  https://github.com/gsi-ee/stream
 
-	Modifications Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Modifications Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 	2023-07-05: Added ClassDef to create a dictionary from struct 
 	HldMessage using rootcint and removed code that is not required
 	for that purpose.	

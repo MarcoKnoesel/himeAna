@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -24,15 +24,18 @@
 
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TGraph.h"
 #include "TFile.h"
 #include "TdcSubEvent.h"
+#include "Detector.h"
 
 class HistogramCollection{
 
 	public:
 	HistogramCollection();
 	HistogramCollection(const std::vector<int>& activeChannels, int nEvents);
-	void fill(const std::vector<std::vector<hadaq::MessageFloat*>>& messagesSortedByChannel, int trigger, int eventCounter);
+	void fill(const std::vector<std::vector<hadaq::MessageFloat*>>& messagesSortedByChannel, int trigger, uint64_t slowScaler, uint64_t fastScaler, int eventCounter);
+	void fill(float tot, float tDiff, float tof, int moduleID);
 	void write(TFile* f);
 
 	TH1F hChannels;
@@ -41,10 +44,20 @@ class HistogramCollection{
 	TH2F hChVsEvtNr;
 	TH1F hNMessages;
 	TH2F hChCorr;
+	TH1F hSlowScaler;
+	TH1F hFastScaler;
+	TH1F hSharpPeak;
+	TH2F hTotVsModuleID;
+	TH2F hTDiffVsModuleID;
+	TH2F hTofVsModuleID;
+	TGraph gSlowScalerDiff;
+	TGraph gFastScalerDiff;
 
 	private:
 	std::vector<int> fActiveChannels;
 	float fInvNEvents;
+	uint64_t previousFastScaler;
+	uint64_t previousSlowScaler;
 };
 
 #endif

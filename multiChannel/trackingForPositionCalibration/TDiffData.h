@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -26,7 +26,6 @@
 #include "TString.h"
 #include "TFile.h"
 #include "TChain.h"
-#include "Constants.h"
 
 class TDiffData{
 	public:

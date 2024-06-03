@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -31,6 +31,7 @@ using std::endl;
 using std::vector;
 using MF = hadaq::MessageFloat;
 using HM = hadaq::HldMessage;
+using SSE = hadaq::ScalerSubEvent;
 
 
 
@@ -75,9 +76,11 @@ TRB3RawData::TRB3RawData(TString path){
 		if( tdcCounter >= fTdcNames.size() ) break;
 	}
 
-	// Set branch address for run information
+	// Set branch address for run and scaler information
 	runInfo = nullptr;
+	scalers = nullptr;
 	fTree->SetBranchAddress("HLD", &runInfo);
+	fTree->SetBranchAddress("SCALER_3800", &scalers);
 }
 
 
@@ -114,4 +117,18 @@ std::vector<std::vector<MF*>> TRB3RawData::getMessagesSortedByChannel(int eventN
 
 int TRB3RawData::getNEvents() const {
 	return fNEvents;
+}
+
+
+
+uint64_t TRB3RawData::getFastScaler() const {
+	if(scalers) return scalers->scaler1;
+	return 0.;
+}
+
+
+
+uint64_t TRB3RawData::getSlowScaler() const {
+	if(scalers) return scalers->scaler2;
+	return 0.;
 }

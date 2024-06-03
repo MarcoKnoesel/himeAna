@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -39,10 +39,14 @@ TDiffData::TDiffData(TString path){
 	// create branches
 	tree->Branch("tDiff", &tDiff);
 	tree->Branch("tSum", &tSum);
+	tree->Branch("tofRaw", &tofRaw);
 	tree->Branch("tot0", &tot0);
 	tree->Branch("tot1", &tot1);
 	tree->Branch("moduleID", &moduleID);
 	tree->Branch("nHits", &nHits, "nHits/I");
+	tree->Branch("slowScaler", &slowScaler, "slowScaler/g");
+	tree->Branch("fastScaler", &fastScaler, "fastScaler/g");
+	tree->Branch("EventNumber", &EventNumber);
 }
 
 
@@ -61,10 +65,13 @@ void TDiffData::write(){
 
 
 void TDiffData::reset(int size){
-	tDiff    = vector<float>(size);
-	tSum     = vector<float>(size);
-	tot0     = vector<float>(size);
-	tot1     = vector<float>(size);
-	moduleID = vector<int>(size);
-	nHits    = 0;
+	tDiff      = vector<float>(size);
+	tSum       = vector<float>(size);
+	tofRaw     = vector<float>(size);
+	tot0       = vector<float>(size);
+	tot1       = vector<float>(size);
+	moduleID   = vector<int>(size);
+	nHits      = 0;
+	slowScaler = 0;
+	fastScaler = 0;
 }

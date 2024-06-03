@@ -8,11 +8,6 @@
 	GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
 	Planckstr. 1, 64291 Darmstadt, Germany
 	Contact:  https://github.com/gsi-ee/stream
-
-	Modifications Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
-	2023-07-05: Added ClassDef to create a dictionary from struct 
-	HldMessage using rootcint and removed code that is not required
-	for that purpose.	
 	----------------------------------------------------------------
 	DISCLAIMER:
 	The Stream framework is free software: you can redistribute it and/or
@@ -33,6 +28,7 @@
 #define HADAQ_TDCSUBEVENT_H
 
 #include "Rtypes.h"
+#include "SubEvent.h"
 
 namespace hadaq {
 
@@ -67,7 +63,7 @@ namespace hadaq {
 			{ return (stamp < rhs.stamp); }
 
 		ClassDef(hadaq::MessageFloat,1)
-	};
+   };
 }
 
 #endif

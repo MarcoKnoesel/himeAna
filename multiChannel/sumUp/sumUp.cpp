@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -17,6 +17,11 @@
 
 	You should have received a copy of the GNU General Public License
 	along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/*
+	Iterate over all runs and add the bin contents of all TH1F and TH2F objects.
+	The result is written to a ROOT file here in the sumUp directory.
 */
 
 #include "sumUp.h"

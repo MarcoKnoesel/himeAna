@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -44,9 +44,14 @@ Module::Module(int id, int ch_left_up, int ch_right_down){
 	TString channelInfoInParenthesis(" (left/top channel: " + ch_left_up_str + ", right/bottom channel: " + ch_right_down_str + ")");
 	TString moduleInfoInParenthesis(" (module " + id_str + ")");
 
-	hTotVsTDiff = TH2F("hTotVsTDiff_module_" + id_str, "ToT vs. tDiff for module " + id_str + channelInfoInParenthesis, 320, -40, 40, 100, 0, 50);
-	hTot_left_up = TH1F("hTot_ch_" + ch_left_up_str, "ToT for channel " + ch_left_up_str + moduleInfoInParenthesis, 100, 0, 50);
-	hTot_right_down = TH1F("hTot_ch_" + ch_right_down_str, "ToT for channel " + ch_right_down_str + moduleInfoInParenthesis, 100, 0, 50);
+	hTotVsTDiff = TH2F("hTotVsTDiff_module_" + id_str, "Module " + id_str + channelInfoInParenthesis, 320, -40, 40, 100, 0, 50);
+	hTot_left_up = TH1F("hTot_ch_" + ch_left_up_str, "Channel " + ch_left_up_str + moduleInfoInParenthesis, 100, 0, 50);
+	hTot_right_down = TH1F("hTot_ch_" + ch_right_down_str, "Channel " + ch_right_down_str + moduleInfoInParenthesis, 100, 0, 50);
+
+	hTotVsTDiff.GetXaxis()->SetTitle("t_{" + ch_left_up_str + "} - t_{" + ch_right_down_str + "} \\; \\mbox{(ns)}");
+	hTotVsTDiff.GetYaxis()->SetTitle("\\sqrt{\\mbox{ToT}_{" + ch_left_up_str + "} \\cdot \\mbox{ToT}_{" + ch_right_down_str + "}} \\; \\mbox{(ns)}");
+	hTot_left_up.GetXaxis()->SetTitle("ToT (ns)");
+	hTot_right_down.GetXaxis()->SetTitle("ToT (ns)");
 }
 
 

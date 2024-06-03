@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -36,17 +36,20 @@ class TDiffData{
 	TDiffData(TString path);
 	void fill();
 	void write();
-	void cdToFile();
 	void reset(int size = 0);
 	inline TFile* getFile(){ return file; }
 
 	// *** The following data is written to the TTree ***
 	std::vector<float> tDiff;				// Time difference between the rising signals of PMT 0 and 1
 	std::vector<float> tSum;				// Sum of the times of the rising signals of PMT 0 and 1
+	std::vector<float> tofRaw;              // Time difference relative to a reference channel
 	std::vector<float> tot0;				// Time over threshold of PMT 0
 	std::vector<float> tot1;				// Time over threshold of PMT 1
 	std::vector<int> moduleID;				// Identification number of the corresponding module
 	int nHits;								// Number of hits in each event
+	uint64_t slowScaler;                    // Value of the slow scaler 
+	uint64_t fastScaler;                    // Value of the fast scaler 
+	int EventNumber; 						// Event Number created by HIME DAQ
 
 	private:
 	TFile *file;

@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -119,9 +119,24 @@ void GainAna::fit(Module& m, float desiredToT){
 		if(targetVoltages[i] < 900 || targetVoltages[i] > 1500){
 			cout << "[GainAna] \e[1m\e[31mError for module " << m.getID() << " channel " << m.getChannels()[i] << "!\e[0m\n";
 			cout << "[GainAna] The calculated voltage " << Convert::toStr(targetVoltages[i]) << " V is outside of the allowed range [900 V, 1500 V]!" << endl;
+			printGainPoints(m, i);
 			targetVoltages[i] = 0.;
 		}
 	}
 	
 	m.setTargetVoltages(targetVoltages);
+}
+
+
+
+void GainAna::printGainPoints(const Module& m, int pmtOrModule){
+	const TGraphErrors& g = m.gainGraphs[pmtOrModule];
+	cout << "[GainAna] [tot, voltage]-data points: [";
+	for(int point = 0; point < g.GetN(); point++){
+		double tot, volt;
+		g.GetPoint(point, tot, volt);
+		cout << "[" << tot << "," << volt << "]";
+		if(point < g.GetN() - 1) cout << ",";
+	}
+	cout << "]" << endl;
 }

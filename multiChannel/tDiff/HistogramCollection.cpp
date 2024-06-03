@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -34,12 +34,21 @@ HistogramCollection::HistogramCollection(const vector<int>& activeChannels, int 
 	fInvNEvents = 1. / nEvents;
 	const int nCh = Constants::nChTot;
 
-	hChannels   = TH1F("hChannels", "TDC channels", nCh, 0, nCh);
-	hTimeStamps = TH1F("hTimeStamps", "Time stamps", 600, -300, 300);
-	hTrigger    = TH1F("hTrigger", "Trigger signals", 10, 0, 10);
-	hChVsEvtNr  = TH2F("hChVsEvtNr", "Number of messages from each channel in dependence on event number", 100, 0, 100, nCh, 0, nCh);
-	hNMessages  = TH1F("hNMessages", "Number of messages per event", 50, 0, 50);
-	hChCorr     = TH2F("hChCorr", "Number of hits in each pair of channels", Constants::nChTot, 0, Constants::nChTot, Constants::nChTot, 0, Constants::nChTot);
+	previousFastScaler = 0;
+	previousSlowScaler = 0;
+
+	hChannels      = TH1F("hChannels", "TDC channels", nCh, 0, nCh);
+	hTimeStamps    = TH1F("hTimeStamps", "Time stamps", 600, -300, 300);
+	hTrigger       = TH1F("hTrigger", "Trigger signals", 16, 0, 16);
+	hChVsEvtNr     = TH2F("hChVsEvtNr", "Number of messages from each channel in dependence on event number", 100, 0, 100, nCh, 0, nCh);
+	hNMessages     = TH1F("hNMessages", "Number of messages per event", 50, 0, 50);
+	hChCorr        = TH2F("hChCorr", "Number of hits in each pair of channels", Constants::nChTot, 0, Constants::nChTot, Constants::nChTot, 0, Constants::nChTot);
+	hTotVsModuleID = TH2F("hTotVsModuleID", "Time over threshold vs. module ID", Constants::nModules, 0, Constants::nModules, 70, 0, 35);
+	hTDiffVsModuleID = TH2F("hTDiffVsModuleID", "", Constants::nModules, 0, Constants::nModules, 320, -40, 40);
+	hTofVsModuleID = TH2F("hTofVsModuleID", "", Constants::nModules, 0, Constants::nModules, 700, -150, 550);
+	hSlowScaler    = TH1F("hSlowScaler", "", 100, 0, 2e10);
+	hFastScaler    = TH1F("hFastScaler", "", 100, 0, 2e10);
+	hSharpPeak     = TH1F("hSharpPeak", "extremely sharp peak", 200, -100, 100);
 	hChannels.GetXaxis()->SetTitle("Channel number");
 	hTimeStamps.GetXaxis()->SetTitle("Time (ns)");
 	hTrigger.GetXaxis()->SetTitle("Tigger (TrbNet Type)");
@@ -48,11 +57,19 @@ HistogramCollection::HistogramCollection(const vector<int>& activeChannels, int 
 	hNMessages.GetXaxis()->SetTitle("Number of messages");
 	hChCorr.GetXaxis()->SetTitle("Channel number");
 	hChCorr.GetYaxis()->SetTitle("Channel number");
+	hTotVsModuleID.GetXaxis()->SetTitle("Module ID");
+	hTotVsModuleID.GetYaxis()->SetTitle("ToT (ns)");
+	gSlowScalerDiff.SetName("gSlowScalerDiff");
+	gFastScalerDiff.SetName("gFastScalerDiff");
+	gSlowScalerDiff.GetXaxis()->SetTitle("Event number");
+	gSlowScalerDiff.GetYaxis()->SetTitle("TBT (s)");
+	gFastScalerDiff.GetXaxis()->SetTitle("Event number");
+	gFastScalerDiff.GetYaxis()->SetTitle("TBT (s)");
 }
 
 
 
-void HistogramCollection::fill(const vector<vector<MF*>>& messagesSortedByChannel, int trigger, int eventCounter){
+void HistogramCollection::fill(const vector<vector<MF*>>& messagesSortedByChannel, int trigger, uint64_t slowScaler, uint64_t fastScaler, int eventCounter){
 	// fill histograms showing general information about the hadaq::MessageFloat objects
 	// that were recorded in this run
 	int nMessages = 0;
@@ -67,6 +84,9 @@ void HistogramCollection::fill(const vector<vector<MF*>>& messagesSortedByChanne
 	}
 	hNMessages.Fill(nMessages);
 	hTrigger.Fill(trigger);
+	hSlowScaler.Fill(slowScaler);
+	hFastScaler.Fill(fastScaler);
+	hSharpPeak.Fill(fastScaler - 4. * slowScaler);
 
 	// iterate over all pairs of active channels
 	for(int i = 0; i < fActiveChannels.size(); i++){
@@ -79,6 +99,22 @@ void HistogramCollection::fill(const vector<vector<MF*>>& messagesSortedByChanne
 			}
 		}
 	}
+
+	// calculate the difference between the scalers of the current and previous events
+	if(eventCounter > 1){
+		gSlowScalerDiff.SetPoint(gSlowScalerDiff.GetN(), eventCounter, (slowScaler - previousSlowScaler)*40e-9);
+		gFastScalerDiff.SetPoint(gFastScalerDiff.GetN(), eventCounter, (fastScaler - previousFastScaler)*10e-9);
+	}
+	previousSlowScaler = slowScaler;
+	previousFastScaler = fastScaler;
+}
+
+
+
+void HistogramCollection::fill(float tot, float tDiff, float tof, int moduleID){
+	hTotVsModuleID.Fill(moduleID, tot);
+	hTDiffVsModuleID.Fill(moduleID, tDiff);
+	hTofVsModuleID.Fill(moduleID, tof);
 }
 
 
@@ -93,4 +129,12 @@ void HistogramCollection::write(TFile* f){
 	hChVsEvtNr.Write();
 	hNMessages.Write();
 	hChCorr.Write();
+	hSlowScaler.Write();
+	hFastScaler.Write();
+	hSharpPeak.Write();
+	gSlowScalerDiff.Write();
+	gFastScalerDiff.Write();
+	hTotVsModuleID.Write();
+	hTDiffVsModuleID.Write();
+	hTofVsModuleID.Write();
 }

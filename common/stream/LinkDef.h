@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -20,6 +20,8 @@
 */
 
 #ifdef __CINT__
+#pragma link C++ class base::SubEvent+;
+#pragma link C++ class hadaq::ScalerSubEvent+;
 #pragma link C++ class hadaq::MessageFloat+;
 #pragma link C++ class hadaq::HldMessage+;
 #pragma link C++ class hadaq::TrbMessage+;

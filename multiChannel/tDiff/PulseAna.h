@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -33,6 +33,7 @@ namespace PulseAna{
 		return false otherwise.
 	*/
 	bool findPulse(std::vector<hadaq::MessageFloat*>& messages, std::array<float,2>& timeStamps);
+	bool findPulses(std::vector<hadaq::MessageFloat*>& messages, std::vector<std::array<float,2>>& timeStamps);
 };
 
 #endif

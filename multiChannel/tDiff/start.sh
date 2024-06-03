@@ -1,7 +1,8 @@
+#!/bin/bash
 
 #	HIMEana: Analyze HIME data.
 #	
-#	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+#	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 #
 #	This file is part of HIMEana.
 #	
@@ -18,12 +19,15 @@
 #	You should have received a copy of the GNU General Public License
 #	along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
 
-#!/bin/bash
-
 # ---------- settings ----------
-subdir=2024-05-27
-filename=voltages2024-05-24_thr0x200_0000.root
+subdir=test
+filename=test.root
 trigger=-1
+# choose if you want to take only the first pulse in each bar
+# for your analysis. Otherwise, multiple hits can be detected 
+# in each module, but there might be more noise.
+# 0 -> first hit only;   1 -> all hits
+multihit=1
 plot=true
 write=true
 # ------------------------------
@@ -38,7 +42,7 @@ if [ $? -eq 0 ]; then
 
 	# start 
 	filename=$(basename "$filename")
-	$ROOT_CALL "tDiff(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",\"${filename}\",${trigger},${write},${plot})" 
+	$ROOT_CALL "tDiff(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",\"${filename}\",${trigger},${multihit},${write},${plot})" 
 
 	wait
 	echo -e "\nstart.sh done."

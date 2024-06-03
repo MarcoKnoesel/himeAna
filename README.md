@@ -4,7 +4,7 @@
 HIMEana serves to analyze data from the Neutron Detector 
 "HIgh-resolution detector array for Multi-neutron Events" (HIME).
 
-Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 HIMEana is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -90,6 +90,8 @@ Note that the source code in `common` needs to be compiled separately, i.e., it 
 ## Files taken from the Stream framework
 HIMEana contains the following files that were taken from the Stream framework and modified:
 - `common/stream/HldProcessor.h`
+- `common/stream/ScalerSubEvent.h`
+- `common/stream/SubEvent.h`
 - `common/stream/TdcSubEvent.h`
 - `common/stream/TrbProcessor.h`
 

@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -31,6 +31,7 @@
 #include "TTree.h"
 #include "TdcSubEvent.h"
 #include "HldProcessor.h"
+#include "ScalerSubEvent.h"
 
 class TRB3RawData{
 	public:
@@ -38,6 +39,10 @@ class TRB3RawData{
 	TRB3RawData(TString path);
 	int getTrigger() const;
 	int getNEvents() const;
+	// return the value of the 100 MHz scaler
+	uint64_t getFastScaler() const;
+	// return the value of the 25 MHz scaler
+	uint64_t getSlowScaler() const;
 	std::vector<std::vector<hadaq::MessageFloat*>> getMessagesSortedByChannel(int eventNumber);
 
 	private:
@@ -45,7 +50,8 @@ class TRB3RawData{
 	TTree *fTree;
 	std::vector<TString> fTdcNames;
 	std::vector<std::vector<hadaq::MessageFloat>*> fTdcs;
-	hadaq::HldMessage *runInfo;
+	hadaq::HldMessage* runInfo;
+	hadaq::ScalerSubEvent* scalers;
 	int fNEvents;
 };
 

@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -25,7 +25,7 @@
 
 namespace Constants{
 	// number of peripheral TDCs
-	const int nTdcs = 4;
+	const int nTdcs = 3;
 	// number of channels per TDC
 	const int nChPerTdc = 48;
 	// total number of channels

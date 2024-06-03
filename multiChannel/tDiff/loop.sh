@@ -1,7 +1,8 @@
+#!/bin/bash
 
 #	HIMEana: Analyze HIME data.
 #	
-#	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+#	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 #
 #	This file is part of HIMEana.
 #	
@@ -18,11 +19,14 @@
 #	You should have received a copy of the GNU General Public License
 #	along with HIMEana.  If not, see <https://www.gnu.org/licenses/>.
 
-#!/bin/bash
-
 # ---------- settings ----------
-subdirs=(2024-04-11 2024-03-22 2024-03-18 2024-03-19)
+subdirs=(2024-06-16)
 trigger=-1
+# choose if you want to take only the first pulse in each bar
+# for your analysis. Otherwise, multiple hits can be detected 
+# in each module, but there might be more noise.
+# false -> first hit only;   true -> all hits
+multihit=true
 # ------------------------------
 
 source ../../common/common.sh
@@ -39,7 +43,7 @@ if [ $? -eq 0 ]; then
 		for filename in "$HIME_ANA_DIRECTORY"/data/unpacked/"$subdir"/*.root; do
 			check_threads "$fileCounter"
 			filenameBase=$(basename "$filename")
-			$ROOT_CALL "tDiff(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",\"${filenameBase}\",${trigger},true,false)" > /dev/null &
+			$ROOT_CALL "tDiff(\"${HIME_ANA_DIRECTORY}\",\"${subdir}\",\"${filenameBase}\",${trigger},${multihit},true,false)" > /dev/null &
 			fileCounter=`expr ${fileCounter} + 1`
 		done
 	done

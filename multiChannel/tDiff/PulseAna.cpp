@@ -1,7 +1,7 @@
 /*
 	HIMEana: Analyze HIME data.
 	
-	Copyright (C) 2023 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
+	Copyright (C) 2023, 2024 Marco Knösel (mknoesel@ikp.tu-darmstadt.de)
 
 	This file is part of HIMEana.
 	
@@ -54,4 +54,40 @@ bool PulseAna::findPulse(vector<MF*>& messages, array<float,2>& timeStamps){
 	// -> in this case, a signal got lost and we cannot calculate the ToT
 	// -> return false
 	return false;
+}
+
+
+
+bool PulseAna::findPulses(vector<MF*>& messages, vector<array<float,2>>& timeStamps){
+	if(messages.size() < 2) return false;
+	
+	// this variable tells if at least one rising edge was found, 
+	// which was followed by a falling edge
+	bool pulseFound = false;
+
+	// iterate over MF objects that are ordered in time
+	for(int iMsg = 0; iMsg < messages.size() - 1; iMsg++){
+		// look at pairs of subsequent MF objects
+		MF& mf_first = *(messages[iMsg]);
+		MF& mf_second = *(messages[iMsg+1]);
+
+		// if the first MF is rising and the second one falling,
+		// we have a complete pulse
+		// -> return true
+		if(mf_first.isRising() && mf_second.isFalling()){
+			timeStamps.push_back({mf_first.getStamp(), mf_second.getStamp()});
+			pulseFound = true;
+		}
+		// if there are two rising or two falling edges,
+		// a signal got lost
+		// -> return false, because we don't know what happened exactly
+		if(mf_first.isRising() && mf_second.isRising()){
+			return false;
+		}
+		if(mf_first.isFalling() && mf_second.isFalling()){
+			return false;
+		}
+	}
+	
+	return pulseFound;
 }
